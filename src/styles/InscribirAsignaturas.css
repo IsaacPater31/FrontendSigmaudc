@@ -1,0 +1,1286 @@
+/* ============================================
+   INSCRIBIR ASIGNATURAS - Estilos
+   ============================================ */
+
+:root {
+  --inscribir-primary-gold: #C9A23F;
+  --inscribir-secondary-gold: #FFD860;
+  --inscribir-bg-primary: #f5f5f7;
+  --inscribir-bg-card: #ffffff;
+  --inscribir-text-primary: #1d1d1f;
+  --inscribir-text-secondary: #86868b;
+  --inscribir-border: rgba(0, 0, 0, 0.06);
+  --inscribir-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --inscribir-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --inscribir-success: #52BE80;
+  --inscribir-error: #FF6B6B;
+  --inscribir-warning: #F7DC6F;
+}
+
+/* Loading State */
+.inscribir-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 20px;
+  padding: 32px 20px;
+  background: var(--inscribir-bg-primary);
+}
+
+.inscribir-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  color: var(--inscribir-primary-gold);
+}
+
+.inscribir-loading p {
+  font-size: 15px;
+  color: var(--inscribir-text-secondary);
+  font-weight: 500;
+}
+
+/* Bloqueo State */
+.inscribir-bloqueo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--inscribir-bg-primary);
+}
+
+.bloqueo-card {
+  background: var(--inscribir-bg-card);
+  border-radius: 18px;
+  padding: 40px 32px;
+  box-shadow: var(--inscribir-shadow-md);
+  border: 1px solid var(--inscribir-border);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.bloqueo-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  color: var(--inscribir-error);
+}
+
+.bloqueo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.bloqueo-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.bloqueo-card p {
+  font-size: 15px;
+  color: var(--inscribir-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.btn-volver {
+  background: linear-gradient(135deg, var(--inscribir-primary-gold) 0%, var(--inscribir-secondary-gold) 100%);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-volver:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 162, 63, 0.3);
+}
+
+/* Container Principal */
+.inscribir-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--inscribir-bg-primary);
+}
+
+.inscribir-header {
+  margin-bottom: 24px;
+}
+
+.header-logo-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.udc-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.udc-logo {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.udc-logo:hover {
+  transform: scale(1.05);
+}
+
+.inscribir-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.inscribir-header p {
+  font-size: 15px;
+  color: var(--inscribir-text-secondary);
+  margin: 0;
+  text-align: center;
+}
+
+/* Historial de solicitudes (estudiante) */
+.solicitudes-section {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.solicitud-status-card,
+.solicitud-history-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--inscribir-border);
+  box-shadow: var(--inscribir-shadow-sm);
+  padding: 12px 14px;
+}
+
+.solicitud-status-card.pendiente {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(180deg, #fffdf7 0%, #ffffff 100%);
+}
+
+.solicitud-status-header,
+.solicitud-history-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.solicitud-status-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.solicitud-status-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+}
+
+.solicitud-status-text {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #78350f;
+}
+
+.solicitudes-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.solicitudes-historial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.solicitudes-historial-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+}
+
+.solicitudes-historial-header span {
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+}
+
+.solicitud-history-card.aprobada {
+  border-left: 4px solid #22c55e;
+}
+
+.solicitud-history-card.rechazada {
+  border-left: 4px solid #ef4444;
+}
+
+.solicitud-history-title {
+  color: var(--inscribir-text-primary);
+  font-size: 13px;
+}
+
+.solicitud-history-date {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+}
+
+.solicitud-status-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.solicitud-status-icon.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+.solicitud-status-icon.success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.solicitud-status-icon.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+}
+
+.solicitud-reason-box {
+  margin-top: 10px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+}
+
+.solicitud-reason-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #b91c1c;
+}
+
+.solicitud-reason-text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #7f1d1d;
+}
+
+/* Contenido de dos columnas */
+.inscribir-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* Columna de Horario */
+.horario-column {
+  order: 1;
+}
+
+.horario-card {
+  background: var(--inscribir-bg-card);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--inscribir-shadow-md);
+  border: 1px solid var(--inscribir-border);
+}
+
+.horario-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+  margin: 0 0 20px 0;
+}
+
+.horario-grid {
+  overflow-x: auto;
+}
+
+.horario-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+/* Encabezado del card del horario: título a la izquierda, controles a la derecha */
+.horario-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.horario-card-header h2 {
+  margin: 0;
+}
+
+/* Flecha de desplegar/ocultar horario (botón pequeño al final) */
+.horario-toggle-arrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: transparent;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: transform 0.18s ease, background 0.12s ease;
+}
+
+.horario-toggle-arrow::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--inscribir-text-primary);
+  border-bottom: 2px solid var(--inscribir-text-primary);
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+
+/* Cuando está abierto, girar la flecha hacia arriba */
+.horario-toggle-arrow.open::before {
+  transform: rotate(-135deg);
+}
+
+.horario-toggle-arrow:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+/* Estilo para la opción de ocultar horas vacías: aspecto de 'pill' acorde con los controles */
+.horario-hide-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.7);
+  font-size: 13px;
+  color: var(--inscribir-text-secondary);
+}
+
+.horario-hide-empty input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.horario-toggle {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.horario-hide-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--inscribir-text-secondary);
+  font-size: 13px;
+}
+
+.horario-collapsed {
+  padding: 12px;
+  color: var(--inscribir-text-secondary);
+  font-size: 14px;
+}
+
+.horario-empty-message {
+  padding: 16px;
+  text-align: center;
+  color: var(--inscribir-text-secondary);
+  font-size: 14px;
+}
+
+.horario-header {
+  display: grid;
+  /* Reserve a fixed time column + seven flexible day columns but prevent
+     the grid from collapsing into multiple rows. Use minmax to provide a
+     reasonable minimum for each day and allow horizontal scrolling when
+     the container is too narrow. */
+  grid-template-columns: 80px repeat(7, minmax(110px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* Ensure the header keeps its columns on a single row; allow the
+     parent `.horario-grid` to scroll horizontally instead of wrapping. */
+  min-width: max-content;
+}
+
+.horario-time-col {
+  padding: 8px;
+  text-align: center;
+}
+
+.horario-day-col {
+  padding: 8px;
+  text-align: center;
+}
+
+.horario-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.horario-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, minmax(110px, 1fr));
+  gap: 8px;
+  min-height: 60px;
+  /* Keep the row columns aligned with the header and prevent wrapping */
+  min-width: max-content;
+}
+
+.horario-time-cell {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.horario-cell {
+  position: relative;
+  min-height: 60px;
+  border: 1px solid var(--inscribir-border);
+  border-radius: 6px;
+  background: rgba(245, 245, 247, 0.5);
+}
+
+.horario-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 4px;
+  border-radius: 6px;
+  padding: 8px;
+  color: white;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.horario-block:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.horario-block-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.horario-block-title {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.horario-block-subtitle {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.horario-block-time {
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+/* Columna de Asignaturas */
+.asignaturas-column {
+  order: 2;
+}
+
+.asignaturas-card {
+  background: var(--inscribir-bg-card);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--inscribir-shadow-md);
+  border: 1px solid var(--inscribir-border);
+}
+
+.asignaturas-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+  margin: 0 0 20px 0;
+}
+
+.inscribir-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.feedback-mensaje {
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(233, 233, 233, 0.7));
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feedback-mensaje h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.feedback-mensaje p {
+  margin: 0;
+  font-size: 13px;
+  color: #3c3c3f;
+}
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 16px;
+}
+
+.dialog-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  width: min(400px, 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.dialog-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #1d1d1f;
+}
+
+.dialog-body {
+  font-size: 14px;
+  margin: 0 0 20px;
+  color: #3c3c3f;
+  line-height: 1.5;
+}
+
+.dialog-close {
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dialog-close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.inscribir-resumen {
+  margin-bottom: 16px;
+}
+
+/* Buscador y filtros de asignaturas */
+.asignaturas-search {
+  margin: 14px 0 18px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--inscribir-border);
+}
+
+.asignaturas-search .search-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  align-items: end;
+}
+
+.asignaturas-search .filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 0;
+}
+
+.asignaturas-search input[type="text"],
+.asignaturas-search select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #fff;
+  font-size: 13px;
+}
+
+.asignaturas-search .filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-clear {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .asignaturas-search .search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Carrito - estilos tipo tienda para las asignaturas seleccionadas */
+.carrito-card {
+  border: 1px solid var(--inscribir-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff9f3;
+  margin-bottom: 16px;
+}
+
+.carrito-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: var(--inscribir-text-primary);
+}
+
+.carrito-sub {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: var(--inscribir-text-secondary);
+}
+
+.carrito-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.carrito-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--inscribir-text-secondary);
+  font-size: 14px;
+}
+
+.carrito-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(245,245,247,0.9), rgba(255,255,255,0.95));
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.carrito-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.carrito-item-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--inscribir-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carrito-item-meta {
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+}
+
+.carrito-item-actions {
+  margin-left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.carrito-remove {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  color: var(--inscribir-error);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.carrito-remove:hover {
+  background: rgba(255, 107, 107, 0.06);
+}
+
+/* Botón de inscribir dentro del carrito */
+.carrito-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.carrito-inscribir {
+  background: linear-gradient(135deg, var(--inscribir-primary-gold) 0%, var(--inscribir-secondary-gold) 100%);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(201, 162, 63, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.carrito-inscribir:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(201, 162, 63, 0.28);
+}
+
+.carrito-inscribir:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.resumen-card {
+  border: 1px solid var(--inscribir-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff9f3;
+}
+
+.resumen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.resumen-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--inscribir-text-secondary);
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.resumen-value {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.resumen-sub {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  color: #6b6b6f;
+}
+
+.resumen-warning {
+  font-size: 12px;
+  margin: 0;
+  color: var(--inscribir-error);
+}
+
+.inscribir-alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  font-size: 13px;
+  color: var(--inscribir-text-primary);
+  margin-bottom: 16px;
+}
+
+.inscribir-info {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  font-size: 13px;
+  color: #1e3a8a;
+  margin-bottom: 16px;
+}
+
+.asignatura-state {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4a4a;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--inscribir-border);
+  align-self: center;
+}
+
+.asignatura-item.estado-pendiente_repeticion {
+  border-color: var(--inscribir-warning);
+  background: rgba(247, 220, 111, 0.12);
+}
+
+.asignatura-item.estado-obligatoria_repeticion {
+  border-color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.asignatura-item.estado-cursada {
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.btn-inscribir:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.asignaturas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.asignaturas-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--inscribir-text-secondary);
+}
+
+.asignatura-item {
+  border: 1px solid var(--inscribir-border);
+  border-radius: 12px;
+  padding: 20px;
+  background: rgba(245, 245, 247, 0.3);
+}
+
+.asignatura-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.asignatura-info h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.asignatura-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Horarios compactos mostrados bajo la descripción de la asignatura */
+.asignatura-horarios {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.asignatura-codigo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--inscribir-primary-gold);
+  background: rgba(201, 162, 63, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.asignatura-creditos {
+  font-size: 13px;
+  color: var(--inscribir-text-secondary);
+}
+
+.asignatura-badge-obligatoria {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.grupos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grupo-item {
+  border: 2px solid var(--inscribir-border);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--inscribir-bg-card);
+  transition: all 0.2s;
+}
+
+.grupo-item.seleccionado {
+  border-color: var(--inscribir-primary-gold);
+  background: rgba(201, 162, 63, 0.05);
+}
+
+.grupo-item.conflicto {
+  border-color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.grupo-item.sin-cupo {
+  opacity: 0.6;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.grupo-item.obligatorio {
+  border-color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.grupo-checkbox-label {
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+  align-items: flex-start;
+}
+
+.grupo-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.grupo-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grupo-codigo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--inscribir-text-primary);
+}
+
+.grupo-cupo {
+  font-size: 12px;
+  color: var(--inscribir-text-secondary);
+  font-weight: 500;
+}
+
+.grupo-cupo-pill {
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 5px 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  letter-spacing: 0.01em;
+}
+
+.grupo-cupo-pill.ok {
+  color: #0f172a;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.grupo-cupo-pill.pocos {
+  color: #7c2d12;
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.grupo-cupo-pill.agotado {
+  color: #7f1d1d;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.grupo-cupo-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 0 8px 0;
+  font-weight: 500;
+}
+
+.grupo-docente {
+  font-size: 13px;
+  color: var(--inscribir-text-secondary);
+  margin-bottom: 8px;
+}
+
+.grupo-horario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.horario-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(201, 162, 63, 0.1);
+  color: var(--inscribir-primary-gold);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.grupo-obligatorio-text,
+.grupo-sin-cupo-text,
+.grupo-conflicto-text {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.grupo-obligatorio-text {
+  color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.grupo-sin-cupo-text {
+  color: var(--inscribir-text-secondary);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.grupo-conflicto-text {
+  color: var(--inscribir-error);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.grupos-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--inscribir-text-secondary);
+  font-size: 13px;
+}
+
+/* Acciones */
+.inscribir-actions {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--inscribir-border);
+  display: flex;
+  justify-content: center;
+}
+
+.btn-inscribir {
+  background: linear-gradient(135deg, var(--inscribir-primary-gold) 0%, var(--inscribir-secondary-gold) 100%);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(201, 162, 63, 0.25);
+}
+
+.btn-inscribir:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 162, 63, 0.35);
+}
+
+.btn-inscribir:active {
+  transform: translateY(0);
+}
+
+/* Responsive logo */
+@media (max-width: 767px) {
+  .udc-logo {
+    height: 50px;
+  }
+  
+  .header-logo-title {
+    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 374px) {
+  .udc-logo {
+    height: 40px;
+  }
+  
+  .header-logo-title {
+    gap: 10px;
+  }
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .inscribir-container {
+    padding: 32px;
+  }
+
+  .inscribir-header h1 {
+    font-size: 32px;
+  }
+
+  .inscribir-content {
+    /* Mantener una sola columna: horario arriba, asignaturas abajo */
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .horario-column {
+    order: 1;
+  }
+
+  .asignaturas-column {
+    order: 2;
+  }
+
+  .horario-card,
+  .asignaturas-card {
+    padding: 32px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .inscribir-container {
+    padding: 40px;
+    padding-left: calc(280px + 40px);
+    transition: padding-left 0.4s;
+  }
+
+  html.sidebar-closed .inscribir-container {
+    padding-left: calc(70px + 40px);
+  }
+}
+
+/* Botón retirar materia */
+.btn-retirar {
+  background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25);
+  margin-top: 8px;
+}
+
+.btn-retirar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.35);
+  background: linear-gradient(135deg, #c82333 0%, #e55a6b 100%);
+}
+
+.btn-retirar:active {
+  transform: translateY(0);
+}
+
+.btn-retirar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Materias ya matriculadas en el horario */
+.horario-block.matriculada {
+  opacity: 0.7;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+

@@ -1,0 +1,299 @@
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { FaBars } from "react-icons/fa";
+// Componentes comunes
+import Login from "./components/common/Login";
+import SetPassword from "./components/common/SetPassword";
+
+// Componentes de estudiantes
+import Sidebar from "./components/estudiante/Sidebar";
+import Subir from "./components/estudiante/Subir";
+import PensumVisual from "./components/estudiante/PensumVisual";
+
+// Componentes de jefes
+import SidebarJefe from "./components/jefe/SidebarJefe";
+
+// Páginas de estudiantes
+import Home from "./pages/estudiante/Home";
+import InscribirAsignaturas from "./pages/estudiante/InscribirAsignaturas";
+import ModificarMatricula from "./pages/estudiante/ModificarMatricula";
+import ConsultarMatricula from "./pages/estudiante/ConsultarMatricula";
+import DatosEstudiante from "./pages/estudiante/DatosEstudiante";
+
+// Páginas de jefes
+import HomeJefe from "./pages/jefe/HomeJefe";
+import Plazos from "./pages/jefe/Plazos";
+import VerificarDocumentos from "./pages/jefe/VerificarDocumentos";
+import Modificaciones from "./pages/jefe/Modificaciones";
+import DatosJefe from "./pages/jefe/DatosJefe";
+import PlanDeEstudio from "./pages/jefe/PlanDeEstudio";
+import { authService } from "./services/auth";
+import ValidarSolicitudes from "./pages/jefe/ValidarSolicitudes";
+
+// Botón hamburguesa para móviles
+const MobileMenuButton = ({ userRole, onToggle }) => {
+  return (
+    <button
+      className="mobile-menu-button"
+      onClick={onToggle}
+      aria-label="Abrir menú"
+    >
+      <FaBars size={20} />
+    </button>
+  );
+};
+
+// Componente para proteger rutas
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = authService.isAuthenticated();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
+// Componente principal de la aplicación
+function AppContent() {
+  const [activePage, setActivePage] = useState("home");
+  const [userRole, setUserRole] = useState(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const sidebarRef = React.useRef(null);
+
+  // Cargar rol del usuario (al montar y cuando cambia la ruta)
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        if (!authService.isAuthenticated()) {
+          setUserRole(null);
+          return;
+        }
+
+        setRoleLoading(true);
+
+        // Primero intentar con el usuario en localStorage para evitar parpadeos
+        const cachedUser = authService.getUser();
+        if (cachedUser?.rol) {
+          setUserRole(cachedUser.rol);
+        }
+
+        // Luego refrescar desde el servidor para asegurar datos actualizados
+        const user = await authService.getCurrentUser();
+        if (user) {
+          authService.saveUser(user);
+          setUserRole(user.rol || null);
+        }
+      } catch (error) {
+        console.error("Error loading user role:", error);
+        const cachedUser = authService.getUser();
+        if (cachedUser?.rol) {
+          setUserRole(cachedUser.rol || null);
+        }
+      } finally {
+        setRoleLoading(false);
+      }
+    };
+
+    loadUserRole();
+  }, [location.pathname]);
+
+  // Sincronizar activePage con la ruta actual (agregar la nueva ruta)
+  React.useEffect(() => {
+    const path = location.pathname;
+    if (path === "/" || path === "/home") {
+      setActivePage("home");
+    } else if (path === "/subir") {
+      setActivePage("subir");
+    } else if (path === "/hoja") {
+      setActivePage("hoja");
+    } else if (path === "/pensum") {
+      setActivePage("pensum");
+    } else if (path === "/inscribir") {
+      setActivePage("inscribir");
+    } else if (path === "/prueba") {
+      setActivePage("Consultar");
+    } else if (path === "/plazos") {
+      setActivePage("plazos");
+    } else if (path === "/verificar-documentos") {
+      setActivePage("verificar-documentos");
+    } else if (path === "/modificaciones") {
+      setActivePage("modificar");
+    } else if (path === "/modificar-matricula") {  // Nueva ruta
+      setActivePage("modificar");
+    } else if (path === "/plan-estudio") {
+      setActivePage("plan-estudio");
+    } else if (path === "/perfil") {
+      setActivePage("perfil");
+    } else if (path === "/validar-solicitudes") {
+      setActivePage("validar-solicitudes");
+    }
+  }, [location]);
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
+  };
+
+  const handlePageChange = (page) => {
+    setActivePage(page);
+    if (page === "home") {
+      navigate("/");
+    } else if (page === "modificar") {
+      // Diferenciar entre estudiante y jefe
+      if (userRole === "jefe_departamental") {
+        navigate("/modificaciones");
+      } else {
+        navigate("/modificar-matricula");
+      }
+    } else if (page === "prueba") {
+      navigate("/prueba");
+    } else if (page === "Consultar") {
+      navigate("/prueba");
+    } else {
+      navigate(`/${page}`);
+    }
+  };
+
+  const renderRouteLoading = () => (
+    <div className="route-loading">
+      <div className="loading-spinner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="32">
+            <animate attributeName="stroke-dasharray" dur="2s" values="0 32;16 16;0 32;0 32" repeatCount="indefinite" />
+            <animate attributeName="stroke-dashoffset" dur="2s" values="0;-16;-32;-32" repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </div>
+    </div>
+  );
+
+  const renderRoleProtected = (element, predicate) => {
+    if (roleLoading) {
+      return renderRouteLoading();
+    }
+    return predicate() ? element : <Navigate to="/" replace />;
+  };
+
+  return (
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/set-password" element={<SetPassword />} />
+
+      {/* Rutas protegidas */}
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            {roleLoading && authService.isAuthenticated() ? (
+              <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#e2e8f0" }}>
+                <div className="loading-spinner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 40, height: 40 }}>
+                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="32">
+                      <animate attributeName="stroke-dasharray" dur="2s" values="0 32;16 16;0 32;0 32" repeatCount="indefinite" />
+                      <animate attributeName="stroke-dashoffset" dur="2s" values="0;-16;-32;-32" repeatCount="indefinite" />
+                    </circle>
+                  </svg>
+                </div>
+              </div>
+            ) : (
+            <div style={{ display: "flex", height: "100vh", background: "#e2e8f0", position: "relative", width: "100%" }}>
+              {/* Backdrop overlay para sidebar en móviles */}
+              <div className="sidebar-backdrop"></div>
+              
+              {/* Botón hamburguesa para móviles */}
+              <MobileMenuButton 
+                userRole={userRole}
+                onToggle={() => {
+                  // Usar el ref para sincronizar con el estado interno del sidebar
+                  if (sidebarRef.current) {
+                    sidebarRef.current.toggle();
+                  }
+                }}
+              />
+              
+              {/* Mostrar Sidebar según el rol */}
+              {userRole === "jefe_departamental" ? (
+                <SidebarJefe 
+                  ref={sidebarRef}
+                  activePage={activePage} 
+                  setActivePage={handlePageChange}
+                  onLogout={handleLogout}
+                />
+              ) : (
+                <Sidebar 
+                  ref={sidebarRef}
+                  activePage={activePage} 
+                  setActivePage={handlePageChange}
+                  onLogout={handleLogout}
+                />
+              )}
+              <div className="main-content" style={{ width: "100%", padding: 0, overflowY: "auto", minHeight: "100vh", marginLeft: 0 }}>
+                <Routes>
+                  {/* Rutas para estudiantes */}
+                  <Route
+                    path="/"
+                    element={
+                      roleLoading
+                        ? renderRouteLoading()
+                        : userRole === "jefe_departamental"
+                          ? <HomeJefe />
+                          : <Home />
+                    }
+                  />
+                  <Route
+                    path="/home"
+                    element={
+                      roleLoading
+                        ? renderRouteLoading()
+                        : userRole === "jefe_departamental"
+                          ? <HomeJefe />
+                          : <Home />
+                    }
+                  />
+                  <Route path="/subir" element={renderRoleProtected(<Subir />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/hoja" element={renderRoleProtected(<DatosEstudiante />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/pensum" element={renderRoleProtected(<PensumVisual />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/inscribir" element={renderRoleProtected(<InscribirAsignaturas />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/prueba" element={renderRoleProtected(<ConsultarMatricula />, () => userRole !== "jefe_departamental")} />
+                  
+                  {/* Nueva ruta para modificar matrícula del estudiante */}
+                  <Route path="/modificar-matricula" element={renderRoleProtected(<ModificarMatricula />, () => userRole !== "jefe_departamental")} />
+                  
+                  <Route path="/plazos" element={renderRoleProtected(<Plazos />, () => userRole === "jefe_departamental")} />
+                  <Route path="/verificar-documentos" element={renderRoleProtected(<VerificarDocumentos />, () => userRole === "jefe_departamental")} />
+                  <Route
+                    path="/modificaciones"
+                    element={renderRoleProtected(<Modificaciones />, () => userRole === "jefe_departamental")}
+                  />
+                  <Route
+                    path="/plan-estudio"
+                    element={renderRoleProtected(<PlanDeEstudio />, () => userRole === "jefe_departamental")}
+                  />
+                  <Route
+                    path="/perfil"
+                    element={renderRoleProtected(<DatosJefe />, () => userRole === "jefe_departamental")}
+                  />
+                  <Route path="/validar-solicitudes" element={renderRoleProtected(<ValidarSolicitudes />, () => userRole === "jefe_departamental")} />
+                  
+                  <Route path="*" element={roleLoading ? renderRouteLoading() : <Navigate to="/" replace />} />
+                </Routes>
+              </div>
+            </div>
+            )}
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
+// Componente wrapper para App
+function App() {
+  return <AppContent />;
+}
+
+export default App;

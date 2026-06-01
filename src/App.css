@@ -1,0 +1,26 @@
+body {
+  background-color: #ffffff;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  color: #333;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.route-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  padding: 1rem;
+}
+
+.route-loading .loading-spinner {
+  width: 56px;
+  height: 56px;
+}
+
