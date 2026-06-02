@@ -46,7 +46,11 @@ const documentosService = {
 
   // Obtener URL del archivo
   getArchivoURL: (archivoURL) => {
-    return `${API_URL}${archivoURL}`;
+    const token = localStorage.getItem("token");
+    const base = `${API_URL}${archivoURL}`;
+    if (!token) return base;
+    const separator = base.includes("?") ? "&" : "?";
+    return `${base}${separator}token=${encodeURIComponent(token)}`;
   },
 };
 

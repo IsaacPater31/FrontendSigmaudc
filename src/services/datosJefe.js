@@ -26,7 +26,11 @@ const datosJefeService = {
     if (path.startsWith("http")) {
       return path;
     }
-    return `${API_URL}${path}`;
+    const token = localStorage.getItem("token");
+    const base = `${API_URL}${path}`;
+    if (!token) return base;
+    const separator = base.includes("?") ? "&" : "?";
+    return `${base}${separator}token=${encodeURIComponent(token)}`;
   },
 };
 
