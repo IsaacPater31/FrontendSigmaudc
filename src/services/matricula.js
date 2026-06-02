@@ -129,8 +129,8 @@ export const matriculaService = {
   },
 
   // Jefe: obtener todas las solicitudes de modificación por programa
-  async getSolicitudesPorPrograma() {
-    const response = await api.get('/api/jefe/solicitudes-modificacion');
+  async getSolicitudesPorPrograma(params = {}) {
+    const response = await api.get('/api/jefe/solicitudes-modificacion', { params });
     return response.data;
   },
 
