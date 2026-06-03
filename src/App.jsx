@@ -531,6 +531,14 @@ function AppContent() {
 
 // Componente wrapper para App
 function App() {
+  useEffect(() => {
+    document.title = "SIGMA-UDC";
+    const favicon = document.querySelector("link[rel='icon']");
+    if (favicon) {
+      favicon.setAttribute("href", "/logo-udc.png");
+    }
+  }, []);
+
   return <AppContent />;
 }
 
