@@ -7,10 +7,6 @@ import {
   FaTimesCircle,
   FaSpinner,
   FaClipboardList,
-  FaUser,
-  FaPlus,
-  FaMinus,
-  FaExclamationTriangle,
   FaClock,
 } from "react-icons/fa";
 
@@ -20,7 +16,6 @@ const HORAS = Array.from({ length: 14 }, (_, i) => 7 + i);
 const COLOR_HORARIO = {
   agregar: "#34c759",
   retirar: "#ff3b30",
-  mantener: "#c7c7cc",
 };
 
 const parseJsonArray = (val) => {
@@ -59,7 +54,7 @@ const buildHorarioUnificado = (vistaPrevia) => {
     entries.push({
       ...materiaToEntry(m),
       cambio: agregar ? "agregar" : "mantener",
-      color: agregar ? COLOR_HORARIO.agregar : COLOR_HORARIO.mantener,
+      ...(agregar ? { color: COLOR_HORARIO.agregar } : {}),
     });
   });
 
@@ -180,23 +175,6 @@ const ValidarSolicitudes = () => {
 
   const solicitudesFiltradas = solicitudes;
 
-  // Agrupar solicitudes por estudiante
-  const solicitudesPorEstudiante = {};
-  solicitudesFiltradas.forEach((sol) => {
-    const key = `${sol.estudiante_codigo || sol.estudiante_id}`;
-    if (!solicitudesPorEstudiante[key]) {
-      solicitudesPorEstudiante[key] = {
-        estudiante: {
-          codigo: sol.estudiante_codigo || `ID: ${sol.estudiante_id}`,
-          nombre: sol.estudiante_nombre || "Sin nombre",
-          apellido: sol.estudiante_apellido || "",
-        },
-        solicitudes: [],
-      };
-    }
-    solicitudesPorEstudiante[key].solicitudes.push(sol);
-  });
-
   if (loading) {
     return (
       <div className="validar-solicitudes-container">
@@ -222,7 +200,7 @@ const ValidarSolicitudes = () => {
           <div>
             <h1 className="page-title">Validar Solicitudes de Modificación</h1>
             <p className="page-subtitle">
-              Revisa cómo quedaría la matrícula del estudiante antes de aprobar o rechazar cada solicitud
+              Una solicitud, un horario. Verde agrega, rojo retira.
             </p>
           </div>
         </div>
@@ -268,33 +246,13 @@ const ValidarSolicitudes = () => {
         </div>
       ) : (
         <div className="solicitudes-grid">
-          {Object.values(solicitudesPorEstudiante).map((grupo, idx) => (
-            <div key={idx} className="estudiante-card">
-              <div className="estudiante-header">
-                <div className="estudiante-info">
-                  <FaUser />
-                  <div>
-                    <h3>
-                      {grupo.estudiante.nombre} {grupo.estudiante.apellido}
-                    </h3>
-                    <p className="estudiante-codigo">
-                      Código: {grupo.estudiante.codigo || `ID: ${grupo.solicitudes[0]?.estudiante_id || 'N/A'}`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="solicitudes-list">
-                {grupo.solicitudes.map((sol) => (
-                  <SolicitudCard
-                    key={sol.id}
-                    solicitud={sol}
-                    onValidar={handleValidar}
-                    procesando={procesando[sol.id] || false}
-                  />
-                ))}
-              </div>
-            </div>
+          {solicitudesFiltradas.map((sol) => (
+            <SolicitudCard
+              key={sol.id}
+              solicitud={sol}
+              onValidar={handleValidar}
+              procesando={procesando[sol.id] || false}
+            />
           ))}
         </div>
       )}
@@ -417,77 +375,53 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
   };
 
   const creditos = vistaPrevia?.creditos;
-  const periodoLabel = vistaPrevia?.periodo
-    ? `${vistaPrevia.periodo.year}-${vistaPrevia.periodo.semestre}`
-    : null;
+  const est = vistaPrevia?.estudiante;
+  const nombreEst =
+    est?.nombre && est?.apellido
+      ? `${est.nombre} ${est.apellido}`
+      : [solicitud.estudiante_nombre, solicitud.estudiante_apellido].filter(Boolean).join(" ") || "Estudiante";
+  const codigoEst = est?.codigo || solicitud.estudiante_codigo || `ID ${solicitud.estudiante_id}`;
 
   return (
-    <div className={`solicitud-card ${solicitud.estado}`}>
-      <div className="solicitud-header">
-        <div>
-          <h4>Solicitud de modificación</h4>
-          <p className="solicitud-fecha">
+    <article className={`solicitud-card ${solicitud.estado}`}>
+      <header className="solicitud-header">
+        <div className="solicitud-header-main">
+          <h3 className="solicitud-estudiante">{nombreEst}</h3>
+          <p className="solicitud-codigo">{codigoEst}</p>
+          <time className="solicitud-fecha">
             {new Date(solicitud.fecha_solicitud).toLocaleDateString("es-ES", {
               day: "numeric",
-              month: "short",
+              month: "long",
               year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
             })}
-          </p>
+          </time>
         </div>
         {getEstadoBadge()}
-      </div>
-
-      {!mostrarRevision && (gruposAAgregar.length > 0 || gruposARetirar.length > 0) && (
-        <ul className="cambios-resumen">
-          {gruposAAgregar.map((g, i) => (
-            <li key={`a-${i}`} className="cambio-linea agregar">
-              <FaPlus /> {g.asignatura_codigo || g.asignatura_nombre} · Gr. {g.grupo_codigo}
-            </li>
-          ))}
-          {gruposARetirar.map((g, i) => (
-            <li key={`r-${i}`} className="cambio-linea retirar">
-              <FaMinus /> {g.asignatura_codigo || g.asignatura_nombre} · Gr. {g.grupo_codigo}
-            </li>
-          ))}
-        </ul>
-      )}
+      </header>
 
       {solicitud.estado === "rechazada" && solicitud.observacion && (
-        <div className="observacion-box">
-          <strong>Observación:</strong>{" "}
-          {typeof solicitud.observacion === "string" ? solicitud.observacion : ""}
-        </div>
+        <p className="observacion-box">{solicitud.observacion}</p>
       )}
 
-      <div className="solicitud-actions">
-        <button
-          className="btn-review"
-          onClick={toggleRevision}
-          disabled={procesando}
-        >
-          {mostrarRevision
-            ? "Cerrar"
-            : solicitud.estado === "pendiente"
-              ? "Revisar"
-              : "Ver detalle"}
-        </button>
-      </div>
+      {!mostrarRevision && (
+        <footer className="solicitud-footer">
+          <button type="button" className="btn-review" onClick={toggleRevision} disabled={procesando}>
+            {solicitud.estado === "pendiente" ? "Revisar solicitud" : "Ver detalle"}
+          </button>
+        </footer>
+      )}
 
       {mostrarRevision && (
         <div className="review-panel">
           {cargandoPreview && (
-            <div className="preview-loading">
-              <FaSpinner className="spinner-small" />
-              <span>Cargando vista previa…</span>
-            </div>
+            <p className="preview-loading">
+              <FaSpinner className="spinner-small" /> Cargando…
+            </p>
           )}
 
           {errorPreview && (
-            <div className="alert-error preview-error">
-              <FaExclamationTriangle />
-              <p>{typeof errorPreview === "string" ? errorPreview : "Error al cargar vista previa"}</p>
+            <div className="preview-alerta">
+              <p>{typeof errorPreview === "string" ? errorPreview : "Error al cargar"}</p>
               <button type="button" className="btn-link" onClick={cargarVistaPrevia}>
                 Reintentar
               </button>
@@ -496,77 +430,83 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
 
           {vistaPrevia && !cargandoPreview && (
             <>
-              <p className="preview-meta">
-                {[
-                  periodoLabel && `Periodo ${periodoLabel}`,
-                  vistaPrevia.estudiante?.semestre != null &&
-                    `Semestre ${vistaPrevia.estudiante.semestre}`,
-                  creditos &&
-                    `${creditos.inscritos_actual} → ${creditos.inscritos_proyectado} cr (máx. ${creditos.maximo})`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-
-              {vistaPrevia.advertencias?.length > 0 && (
-                <div className="preview-alerta">
-                  <FaExclamationTriangle />
-                  <p>{vistaPrevia.advertencias[0]}</p>
-                  {vistaPrevia.advertencias.length > 1 && (
-                    <details className="alerta-mas">
-                      <summary>{vistaPrevia.advertencias.length - 1} advertencia(s) más</summary>
-                      <ul>
-                        {vistaPrevia.advertencias.slice(1).map((adv, i) => (
-                          <li key={i}>{adv}</li>
-                        ))}
-                      </ul>
-                    </details>
+              <section className="estudiante-panel" aria-label="Información del estudiante">
+                <dl className="estudiante-datos">
+                  <div>
+                    <dt>Semestre</dt>
+                    <dd>{est?.semestre ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Periodo</dt>
+                    <dd>
+                      {vistaPrevia.periodo
+                        ? `${vistaPrevia.periodo.year}-${vistaPrevia.periodo.semestre}`
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Créditos</dt>
+                    <dd>
+                      {creditos
+                        ? `${creditos.inscritos_actual} → ${creditos.inscritos_proyectado}`
+                        : "—"}
+                    </dd>
+                  </div>
+                  {est?.promedio != null && (
+                    <div>
+                      <dt>Promedio</dt>
+                      <dd>{Number(est.promedio).toFixed(2)}</dd>
+                    </div>
                   )}
-                </div>
+                </dl>
+              </section>
+
+              {(gruposAAgregar.length > 0 || gruposARetirar.length > 0) && (
+                <section className="cambios-panel" aria-label="Cambios solicitados">
+                  {gruposAAgregar.map((g, i) => (
+                    <p key={`a-${i}`} className="cambio-texto agregar">
+                      + {g.asignatura_codigo || g.asignatura_nombre}
+                      {g.grupo_codigo ? ` · Gr. ${g.grupo_codigo}` : ""}
+                    </p>
+                  ))}
+                  {gruposARetirar.map((g, i) => (
+                    <p key={`r-${i}`} className="cambio-texto retirar">
+                      − {g.asignatura_codigo || g.asignatura_nombre}
+                      {g.grupo_codigo ? ` · Gr. ${g.grupo_codigo}` : ""}
+                    </p>
+                  ))}
+                </section>
               )}
 
-              <div className="preview-horario-section">
-                <div className="horario-leyenda">
-                  <span><i className="leyenda-dot agregar" /> Agrega</span>
-                  <span><i className="leyenda-dot retirar" /> Retira</span>
-                  <span><i className="leyenda-dot mantener" /> Sin cambio</span>
-                </div>
+              {vistaPrevia.advertencias?.length > 0 && (
+                <p className="preview-alerta">{vistaPrevia.advertencias[0]}</p>
+              )}
+
+              <section className="horario-panel" aria-label="Horario con cambios">
                 <div className="horario-grid-wrapper">
                   <HorarioGrid
                     entries={buildHorarioUnificado(vistaPrevia)}
                     diasSemana={DIAS_SEMANA}
                     horas={HORAS}
                     hideEmptyHours
-                    obtenerColorAsignatura={() => COLOR_HORARIO.mantener}
+                    obtenerColorAsignatura={() => "transparent"}
                   />
                 </div>
-              </div>
+              </section>
 
               {solicitud.estado === "pendiente" && (
-                <div className="review-form">
+                <footer className="review-form">
                   <textarea
                     className="observacion-input"
-                    placeholder="Observación al rechazar (obligatoria)…"
+                    placeholder="Motivo del rechazo…"
                     value={observacion}
                     onChange={(e) => setObservacion(e.target.value)}
                     rows="2"
                   />
                   <div className="review-buttons">
-                    <button
-                      type="button"
-                      className="btn-approve"
-                      onClick={handleAprobar}
-                      disabled={procesando}
-                    >
-                      {procesando ? (
-                        <>
-                          <FaSpinner className="spinner-small" /> Procesando…
-                        </>
-                      ) : (
-                        <>
-                          <FaCheckCircle /> Aprobar
-                        </>
-                      )}
+                    <button type="button" className="btn-approve" onClick={handleAprobar} disabled={procesando}>
+                      {procesando ? <FaSpinner className="spinner-small" /> : <FaCheckCircle />}
+                      Aprobar
                     </button>
                     <button
                       type="button"
@@ -580,24 +520,21 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
                       }}
                       disabled={procesando || !observacion.trim()}
                     >
-                      {procesando ? (
-                        <>
-                          <FaSpinner className="spinner-small" /> Procesando…
-                        </>
-                      ) : (
-                        <>
-                          <FaTimesCircle /> Rechazar
-                        </>
-                      )}
+                      {procesando ? <FaSpinner className="spinner-small" /> : <FaTimesCircle />}
+                      Rechazar
                     </button>
                   </div>
-                </div>
+                </footer>
               )}
+
+              <button type="button" className="btn-cerrar" onClick={toggleRevision}>
+                Cerrar
+              </button>
             </>
           )}
         </div>
       )}
-    </div>
+    </article>
   );
 };
 

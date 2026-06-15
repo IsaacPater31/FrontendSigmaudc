@@ -90,8 +90,8 @@ export default function HorarioGrid({ entries = [], diasSemana = ['LUNES','MARTE
                     const bloqueAltura = Math.max(pos.duracionMinutos - 4, 28);
                     const bloqueTop = 4 + Math.min(pos.offsetDentroHora, 52);
                     const blockColor = h.color
-                      || (typeof obtenerColorEntrada === 'function' ? obtenerColorEntrada(h) : null)
-                      || obtenerColorAsignatura(h.codigo || h.asignatura_codigo || h.codigoAsignatura);
+                      ?? (typeof obtenerColorEntrada === 'function' ? obtenerColorEntrada(h) : null)
+                      ?? (h.cambio === 'mantener' ? null : obtenerColorAsignatura(h.codigo || h.asignatura_codigo || h.codigoAsignatura));
                     const blockClass = [
                       'horario-block',
                       h.cambio ? `horario-block--${h.cambio}` : '',
@@ -101,7 +101,7 @@ export default function HorarioGrid({ entries = [], diasSemana = ['LUNES','MARTE
                         key={idx}
                         className={blockClass}
                         style={{
-                          backgroundColor: blockColor,
+                          ...(blockColor ? { backgroundColor: blockColor } : {}),
                           height: `${bloqueAltura}px`,
                           top: `${bloqueTop}px`,
                         }}
