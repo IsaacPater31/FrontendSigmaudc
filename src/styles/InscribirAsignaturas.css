@@ -470,6 +470,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: visible;
 }
 
 .horario-row {
@@ -477,8 +478,8 @@
   grid-template-columns: 80px repeat(7, minmax(110px, 1fr));
   gap: 8px;
   min-height: 60px;
-  /* Keep the row columns aligned with the header and prevent wrapping */
   min-width: max-content;
+  overflow: visible;
 }
 
 .horario-time-cell {
@@ -498,6 +499,11 @@
   border: 1px solid var(--inscribir-border);
   border-radius: 6px;
   background: rgba(245, 245, 247, 0.5);
+  overflow: visible;
+}
+
+.horario-cell--continuacion {
+  background: rgba(245, 245, 247, 0.35);
 }
 
 .horario-block {

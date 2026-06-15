@@ -31,12 +31,21 @@ const parseJsonArray = (val) => {
 };
 
 const materiaToEntry = (m) => ({
-  asignatura: m.nombre,
+  asignatura: m.nombre || m.codigo,
   codigo: m.codigo,
   grupoCodigo: m.grupo_codigo,
   docente: m.docente,
   horarios: m.horarios || [],
 });
+
+const etiquetaMateria = (g) => {
+  const nombre = (g.asignatura_nombre || g.nombre || "").trim();
+  const codigo = (g.asignatura_codigo || g.codigo || "").trim();
+  if (nombre && codigo && nombre.toLowerCase() !== codigo.toLowerCase()) {
+    return `${nombre} (${codigo})`;
+  }
+  return nombre || codigo || "Asignatura";
+};
 
 const buildHorarioUnificado = (vistaPrevia) => {
   if (!vistaPrevia) return [];
@@ -461,25 +470,36 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
                 </dl>
               </section>
 
-              {(gruposAAgregar.length > 0 || gruposARetirar.length > 0) && (
-                <section className="cambios-panel" aria-label="Cambios solicitados">
-                  {gruposAAgregar.map((g, i) => (
-                    <p key={`a-${i}`} className="cambio-texto agregar">
-                      + {g.asignatura_codigo || g.asignatura_nombre}
-                      {g.grupo_codigo ? ` · Gr. ${g.grupo_codigo}` : ""}
-                    </p>
-                  ))}
-                  {gruposARetirar.map((g, i) => (
-                    <p key={`r-${i}`} className="cambio-texto retirar">
-                      − {g.asignatura_codigo || g.asignatura_nombre}
-                      {g.grupo_codigo ? ` · Gr. ${g.grupo_codigo}` : ""}
-                    </p>
-                  ))}
-                </section>
-              )}
+              {(() => {
+                const itemsAgregar = vistaPrevia.materias_agregar?.length
+                  ? vistaPrevia.materias_agregar
+                  : gruposAAgregar;
+                const itemsRetirar = vistaPrevia.materias_retiradas?.length
+                  ? vistaPrevia.materias_retiradas
+                  : gruposARetirar;
+                if (itemsAgregar.length === 0 && itemsRetirar.length === 0) return null;
+                return (
+                  <section className="cambios-panel" aria-label="Cambios solicitados">
+                    {itemsAgregar.map((g, i) => (
+                      <p key={`a-${i}`} className="cambio-texto agregar">
+                        + {etiquetaMateria(g)}
+                        {g.grupo_codigo ? ` · ${g.grupo_codigo}` : ""}
+                      </p>
+                    ))}
+                    {itemsRetirar.map((g, i) => (
+                      <p key={`r-${i}`} className="cambio-texto retirar">
+                        − {etiquetaMateria(g)}
+                        {g.grupo_codigo ? ` · ${g.grupo_codigo}` : ""}
+                      </p>
+                    ))}
+                  </section>
+                );
+              })()}
 
               {vistaPrevia.advertencias?.length > 0 && (
-                <p className="preview-alerta">{vistaPrevia.advertencias[0]}</p>
+                <p className="preview-alerta">
+                  {vistaPrevia.conflictos_horario?.[0]?.mensaje || vistaPrevia.advertencias[0]}
+                </p>
               )}
 
               <section className="horario-panel" aria-label="Horario con cambios">

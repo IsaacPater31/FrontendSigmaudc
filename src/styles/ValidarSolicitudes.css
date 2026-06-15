@@ -463,71 +463,95 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow: visible;
   }
 
   .validar-solicitudes-container .horario-row {
     display: grid;
     grid-template-columns: 48px repeat(6, minmax(80px, 1fr));
     gap: 8px;
-    min-height: 48px;
     min-width: max-content;
+    overflow: visible;
   }
 
   .validar-solicitudes-container .horario-time-cell {
     font-size: 11px;
     color: var(--jefe-text-secondary);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 8px;
   }
 
   .validar-solicitudes-container .horario-cell {
     position: relative;
-    min-height: 48px;
     border-radius: 10px;
     background: transparent;
+    overflow: visible;
+  }
+
+  .validar-solicitudes-container .horario-cell--continuacion {
+    background: rgba(0, 0, 0, 0.02);
   }
 
   .validar-solicitudes-container .horario-block {
     position: absolute;
-    left: 2px;
-    right: 2px;
+    left: 3px;
+    right: 3px;
     border-radius: 8px;
-    padding: 5px 7px;
+    padding: 6px 8px;
     color: #fff;
     font-size: 10px;
-    z-index: 1;
+    z-index: 2;
     overflow: hidden;
+    box-sizing: border-box;
   }
 
   .validar-solicitudes-container .horario-block--mantener {
     background: #fff !important;
     color: #1d1d1f;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     box-shadow: none;
+    z-index: 1;
   }
 
   .validar-solicitudes-container .horario-block--agregar {
-    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+    z-index: 3;
+    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.22);
   }
 
   .validar-solicitudes-container .horario-block--retirar {
-    opacity: 0.85;
+    z-index: 3;
+    opacity: 0.88;
     box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2);
   }
 
   .validar-solicitudes-container .horario-block-title {
     font-weight: 600;
     font-size: 11px;
-    line-height: 1.2;
-    white-space: nowrap;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .validar-solicitudes-container .horario-block-subtitle,
+  .validar-solicitudes-container .horario-block-subtitle {
+    font-size: 10px;
+    opacity: 0.9;
+    margin-top: 2px;
+  }
+
   .validar-solicitudes-container .horario-block-time {
-    display: none;
+    font-size: 9px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  .validar-solicitudes-container .horario-block--mantener .horario-block-subtitle,
+  .validar-solicitudes-container .horario-block--mantener .horario-block-time {
+    color: var(--jefe-text-secondary);
+    opacity: 1;
   }
 
   .review-form {
