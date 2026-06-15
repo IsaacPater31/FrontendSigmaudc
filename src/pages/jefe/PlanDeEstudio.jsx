@@ -93,18 +93,32 @@ const PlanDeEstudio = () => {
   }, [grupos, filterTexto, filterSemestre]);
 
   // Abrir modal para editar horario del grupo
+  const buildHorariosIniciales = (grupo) => {
+    const existing = (grupo.horarios || []).map((h) => ({
+      dia: h.dia,
+      hora_inicio: h.hora_inicio,
+      hora_fin: h.hora_fin,
+      salon: h.salon || '',
+      componente: h.componente || 'teoria',
+    }));
+    if (!grupo.tiene_laboratorio) {
+      return existing.length > 0 ? existing : [{ dia: 'LUNES', hora_inicio: '07:00', hora_fin: '08:00', salon: '', componente: 'teoria' }];
+    }
+    const result = [...existing];
+    if (!result.some((h) => h.componente === 'teoria')) {
+      result.push({ dia: 'MARTES', hora_inicio: '08:00', hora_fin: '10:00', salon: '', componente: 'teoria' });
+    }
+    if (!result.some((h) => h.componente === 'laboratorio')) {
+      result.push({ dia: 'JUEVES', hora_inicio: '14:00', hora_fin: '16:00', salon: '', componente: 'laboratorio' });
+    }
+    return result;
+  };
+
   const openGrupoModal = (grupo) => {
     setModalError(null);
     setModalGrupo(grupo);
-    setEditableDocente(grupo.docente || ''); // Inicializar docente
-    setEditableHorarios(
-      (grupo.horarios || []).map((h) => ({
-        dia: h.dia,
-        hora_inicio: h.hora_inicio,
-        hora_fin: h.hora_fin,
-        salon: h.salon || '',
-      }))
-    );
+    setEditableDocente(grupo.docente || '');
+    setEditableHorarios(buildHorariosIniciales(grupo));
     setModalOpen(true);
   };
 
@@ -117,15 +131,29 @@ const PlanDeEstudio = () => {
   };
 
   const addHorario = () => {
-    setEditableHorarios((prev) => [...prev, { dia: 'LUNES', hora_inicio: '07:00', hora_fin: '08:00', salon: '' }]);
+    const componente = modalGrupo?.tiene_laboratorio ? 'teoria' : 'teoria';
+    setEditableHorarios((prev) => [...prev, { dia: 'LUNES', hora_inicio: '07:00', hora_fin: '08:00', salon: '', componente }]);
   };
 
-  const removeHorario = (idx) => {
-    setEditableHorarios((prev) => prev.filter((_, i) => i !== idx));
+  const validarHorariosLocal = (horarios, tieneLaboratorio) => {
+    const teoria = horarios.filter((h) => (h.componente || 'teoria') === 'teoria').length;
+    const lab = horarios.filter((h) => h.componente === 'laboratorio').length;
+    if (tieneLaboratorio) {
+      return teoria === 1 && lab === 1;
+    }
+    return teoria >= 1 && lab === 0;
   };
 
   const saveHorarios = async () => {
     if (!modalGrupo) return;
+    if (!validarHorariosLocal(editableHorarios, modalGrupo.tiene_laboratorio)) {
+      setModalError(
+        modalGrupo.tiene_laboratorio
+          ? 'Asignaturas con laboratorio requieren exactamente un bloque de teoría y uno de laboratorio.'
+          : 'El grupo debe tener al menos un bloque de teoría y ninguno de laboratorio.'
+      );
+      return;
+    }
     setSavingHorarios(true);
     setModalError(null);
     try {
@@ -134,6 +162,7 @@ const PlanDeEstudio = () => {
         hora_inicio: h.hora_inicio,
         hora_fin: h.hora_fin,
         salon: h.salon || '',
+        componente: h.componente || 'teoria',
       }));
       await matriculaService.updateGrupoHorario(modalGrupo.id, payloadHorarios, editableDocente);
       // Actualizar el grupo en el estado local (horarios y docente)
@@ -146,15 +175,24 @@ const PlanDeEstudio = () => {
       setModalOpen(false);
     } catch (err) {
       console.error('Error guardando horarios:', err);
-      setModalError('No se pudo guardar. Revisa la consola.');
+      const msg = err?.response?.data || err?.message || 'No se pudo guardar.';
+      setModalError(typeof msg === 'string' ? msg : 'No se pudo guardar. Revisa la consola.');
       setSavingHorarios(false);
     }
   };
 
+  const removeHorario = (idx) => {
+    setEditableHorarios((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const etiquetaComponente = (componente) => (componente === 'laboratorio' ? 'Lab' : 'Teo');
+
   // Formatear horario para mostrar en la tarjeta
   const formatHorarios = (horarios) => {
     if (!horarios || horarios.length === 0) return 'Sin horario definido';
-    return horarios.map((h) => `${h.dia.substring(0, 3)} ${h.hora_inicio}-${h.hora_fin}`).join(' | ');
+    return horarios
+      .map((h) => `${etiquetaComponente(h.componente)} ${h.dia.substring(0, 3)} ${h.hora_inicio}-${h.hora_fin}`)
+      .join(' | ');
   };
 
   return (
@@ -261,6 +299,7 @@ const PlanDeEstudio = () => {
                   <strong>Cupo:</strong> {g.cupo_disponible}/{g.cupo_max}
                 </div>
                 <div className="asig-meta" style={{ marginTop: 4, fontSize: '0.85em', color: '#666' }}>
+                  {g.tiene_laboratorio && <span style={{ marginRight: 6, color: '#C9A23F' }}>Con lab</span>}
                   {formatHorarios(g.horarios)}
                 </div>
                 <div style={{ marginTop: 8 }}>
@@ -295,6 +334,11 @@ const PlanDeEstudio = () => {
 
               <div style={{ marginBottom: 8 }}>
                 <label style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Horarios:</label>
+                {modalGrupo.tiene_laboratorio && (
+                  <p style={{ fontSize: '0.9em', color: '#666', margin: '0 0 8px' }}>
+                    Esta asignatura requiere un bloque de teoría y uno de laboratorio.
+                  </p>
+                )}
               </div>
               
               {modalError && <div style={{ color: 'red', marginBottom: 8 }}>{modalError}</div>}
@@ -303,7 +347,16 @@ const PlanDeEstudio = () => {
                   <div>Este grupo no tiene horarios definidos.</div>
                 ) : (
                   editableHorarios.map((h, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                    <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
+                      {modalGrupo.tiene_laboratorio && (
+                        <select
+                          value={h.componente || 'teoria'}
+                          onChange={(e) => updateHorarioField(idx, 'componente', e.target.value)}
+                        >
+                          <option value="teoria">Teoría</option>
+                          <option value="laboratorio">Laboratorio</option>
+                        </select>
+                      )}
                       <select value={h.dia} onChange={(e) => updateHorarioField(idx, 'dia', e.target.value)}>
                         {['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'].map((d) => (
                           <option key={d} value={d}>

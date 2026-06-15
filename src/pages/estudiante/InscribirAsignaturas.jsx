@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
 import "../../styles/InscribirAsignaturas.css";
 
+const etiquetaComponente = (componente) => (componente === "laboratorio" ? "Lab" : "Teo");
+
 const InscribirAsignaturas = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -880,7 +882,7 @@ const InscribirAsignaturas = () => {
                                   <div className="asignatura-horarios">
                                     {getHorariosAsignatura(asignatura).map((hor, i) => (
                                       <span key={i} className="horario-badge">
-                                        {hor.dia.substring(0,3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
+                                        {etiquetaComponente(hor.componente)} {hor.dia.substring(0,3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
                                       </span>
                                     ))}
                                   </div>
@@ -932,7 +934,7 @@ const InscribirAsignaturas = () => {
                                     <div className="grupo-horario">
                                       {grupo.horarios?.map((hor, idx) => (
                                         <span key={idx} className="horario-badge">
-                                          {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
+                                          {etiquetaComponente(hor.componente)} {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
                                         </span>
                                       ))}
                                     </div>

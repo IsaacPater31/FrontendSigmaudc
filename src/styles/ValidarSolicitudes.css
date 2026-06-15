@@ -229,8 +229,6 @@
     gap: 20px;
     width: 100%;
   }
-  
-  /* Tarjeta de estudiante */
   .estudiante-card {
     background: var(--jefe-bg-card);
     border-radius: 20px;
@@ -663,46 +661,25 @@
     .validar-solicitudes-container {
       padding: 32px 28px;
     }
-  
+
     .page-title {
       font-size: 40px;
     }
-  
-    .solicitudes-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-    }
-  
+
     .review-buttons {
       flex-direction: row;
     }
-  
+
     .btn-approve,
     .btn-reject {
       flex: 1;
       min-width: 140px;
     }
   }
-  
+
   @media (min-width: 1025px) {
     .validar-solicitudes-container {
       padding: 40px 32px;
-    }
-  
-    .solicitudes-grid {
-      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-      gap: 28px;
-    }
-  }
-  
-  @media (min-width: 1441px) {
-    .validar-solicitudes-container {
-      padding: 48px 40px;
-    }
-  
-    .solicitudes-grid {
-      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-      gap: 32px;
     }
   }
   
@@ -772,5 +749,441 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Resumen rápido de cambios */
+  .solicitud-resumen-cambios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .resumen-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .resumen-chip.agregar {
+    background: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+  }
+
+  .resumen-chip.retirar {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+  }
+
+  .resumen-chip.vacio {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--jefe-text-secondary);
+  }
+
+  /* Panel de revisión expandido */
+  .review-panel {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .preview-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    color: var(--jefe-text-secondary);
+    font-size: 14px;
+  }
+
+  .preview-error {
+    flex-wrap: wrap;
+  }
+
+  .btn-sm {
+    flex: 0 0 auto !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .preview-estudiante-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .preview-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--jefe-bg-card);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .preview-stat svg {
+    color: var(--jefe-primary-gold);
+    flex-shrink: 0;
+  }
+
+  .preview-stat-label {
+    display: block;
+    font-size: 11px;
+    color: var(--jefe-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+  }
+
+  .preview-stat strong {
+    font-size: 16px;
+    color: var(--jefe-text-primary);
+  }
+
+  .preview-creditos-card {
+    background: var(--jefe-bg-card);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .preview-creditos-card h5 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--jefe-text-primary);
+  }
+
+  .creditos-comparacion {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .credito-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .credito-col.destacado {
+    background: rgba(201, 162, 63, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    grid-column: 1 / -1;
+  }
+
+  .credito-label {
+    font-size: 11px;
+    color: var(--jefe-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .credito-col strong {
+    font-size: 22px;
+    color: var(--jefe-text-primary);
+    line-height: 1.1;
+  }
+
+  .credito-delta {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--jefe-text-secondary);
+  }
+
+  .credito-delta.positivo { color: #16a34a; }
+  .credito-delta.negativo { color: #dc2626; }
+
+  .creditos-barra {
+    position: relative;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .creditos-barra-actual,
+  .creditos-barra-proyectado {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .creditos-barra-actual {
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+
+  .creditos-barra-proyectado {
+    background: linear-gradient(90deg, var(--jefe-primary-gold), var(--jefe-secondary-gold));
+    z-index: 2;
+    opacity: 0.85;
+  }
+
+  .preview-advertencias {
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+
+  .preview-advertencias h5 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #dc2626;
+  }
+
+  .preview-advertencias ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: #991b1b;
+    line-height: 1.5;
+  }
+
+  .preview-ok {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #16a34a;
+  }
+
+  .preview-matriculas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .matricula-col h5 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--jefe-text-primary);
+  }
+
+  .matricula-col.proyectada h5 {
+    color: #16a34a;
+  }
+
+  .matricula-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .matricula-fila {
+    background: var(--jefe-bg-card);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .matricula-fila.nueva {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.04);
+  }
+
+  .matricula-fila-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .matricula-codigo {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .matricula-creditos {
+    font-size: 11px;
+    color: var(--jefe-text-secondary);
+  }
+
+  .cambio-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .cambio-badge.agregar {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+  }
+
+  .matricula-nombre {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--jefe-text-primary);
+  }
+
+  .matricula-grupo {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    color: var(--jefe-text-secondary);
+  }
+
+  .matricula-docente {
+    font-style: italic;
+  }
+
+  .matricula-horarios-mini {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .matricula-horarios-mini li {
+    font-size: 11px;
+    color: var(--jefe-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .comp-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.08);
+    text-transform: uppercase;
+  }
+
+  .salon-mini {
+    opacity: 0.8;
+  }
+
+  .matricula-vacia {
+    font-size: 13px;
+    color: var(--jefe-text-secondary);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .preview-retiradas {
+    margin-bottom: 16px;
+  }
+
+  .preview-retiradas h5 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #dc2626;
+  }
+
+  .retiradas-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .retirada-chip {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    text-decoration: line-through;
+    opacity: 0.9;
+  }
+
+  .preview-horario {
+    margin-bottom: 16px;
+  }
+
+  .horario-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .horario-tabs button {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background: var(--jefe-bg-card);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--jefe-text-secondary);
+  }
+
+  .horario-tabs button.active {
+    background: linear-gradient(135deg, var(--jefe-primary-gold) 0%, var(--jefe-secondary-gold) 100%);
+    color: #1d1d1f;
+    border-color: transparent;
+  }
+
+  .preview-horario-grid {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 8px;
+    background: var(--jefe-bg-card);
+  }
+
+  @media (min-width: 768px) {
+    .preview-estudiante-bar {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .creditos-comparacion {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .credito-col.destacado {
+      grid-column: auto;
+    }
+
+    .preview-matriculas {
+      grid-template-columns: 1fr 1fr;
     }
   }

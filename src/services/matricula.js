@@ -143,6 +143,12 @@ export const matriculaService = {
     return response.data;
   },
 
+  // Jefe: vista previa de matrícula proyectada para una solicitud
+  async getSolicitudVistaPrevia(solicitudId) {
+    const response = await api.get(`/api/jefe/solicitudes-modificacion/${solicitudId}/vista-previa`);
+    return response.data;
+  },
+
   // Suscripción SSE para cambios de solicitudes/cupos (sin polling)
   subscribeModificacionesEvents({ onMessage, onError } = {}) {
     const token = localStorage.getItem('token');

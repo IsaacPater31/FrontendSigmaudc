@@ -4,6 +4,8 @@ import { matriculaService } from "../../services/matricula";
 import "../../styles/InscribirAsignaturas.css";
 import { FaCheckCircle, FaTimesCircle, FaSpinner, FaClock, FaExclamationTriangle } from "react-icons/fa";
 
+const etiquetaComponente = (componente) => (componente === "laboratorio" ? "Lab" : "Teo");
+
 const ModificarMatricula = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -1018,7 +1020,7 @@ const ModificarMatricula = () => {
                             <div className="grupo-horario">
                               {materia.horarios?.map((hor, idx) => (
                                 <span key={idx} className="horario-badge">
-                                  {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
+                                  {etiquetaComponente(hor.componente)} {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
                                 </span>
                               ))}
                             </div>
@@ -1145,7 +1147,7 @@ const ModificarMatricula = () => {
                                     <div className="grupo-horario">
                                       {grupo.horarios?.map((hor, idx) => (
                                         <span key={idx} className="horario-badge">
-                                          {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
+                                          {etiquetaComponente(hor.componente)} {hor.dia.substring(0, 3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
                                         </span>
                                       ))}
                                     </div>
