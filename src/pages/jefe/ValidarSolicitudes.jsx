@@ -362,7 +362,7 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
   const handleAprobar = () => {
     if (vistaPrevia && !vistaPrevia.puede_aprobar) {
       const confirmar = window.confirm(
-        "Esta solicitud tiene advertencias (conflictos de horario, créditos, cupos, etc.). ¿Deseas aprobarla de todas formas?"
+        "Esta solicitud tiene advertencias (créditos, cupos, etc.). ¿Deseas aprobarla de todas formas?"
       );
       if (!confirmar) return;
     }
@@ -497,9 +497,7 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
               })()}
 
               {vistaPrevia.advertencias?.length > 0 && (
-                <p className="preview-alerta">
-                  {vistaPrevia.conflictos_horario?.[0]?.mensaje || vistaPrevia.advertencias[0]}
-                </p>
+                <p className="preview-alerta">{vistaPrevia.advertencias[0]}</p>
               )}
 
               <section className="horario-panel" aria-label="Horario con cambios">
