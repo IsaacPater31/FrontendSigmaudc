@@ -360,12 +360,6 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
   };
 
   const handleAprobar = () => {
-    if (vistaPrevia && !vistaPrevia.puede_aprobar) {
-      const confirmar = window.confirm(
-        "Esta solicitud tiene advertencias (créditos, cupos, etc.). ¿Deseas aprobarla de todas formas?"
-      );
-      if (!confirmar) return;
-    }
     onValidar(solicitud.id, "aprobada", "");
     setMostrarRevision(false);
     setObservacion("");
@@ -495,10 +489,6 @@ const SolicitudCard = ({ solicitud, onValidar, procesando }) => {
                   </section>
                 );
               })()}
-
-              {vistaPrevia.advertencias?.length > 0 && (
-                <p className="preview-alerta">{vistaPrevia.advertencias[0]}</p>
-              )}
 
               <section className="horario-panel" aria-label="Horario con cambios">
                 <div className="horario-grid-wrapper">
