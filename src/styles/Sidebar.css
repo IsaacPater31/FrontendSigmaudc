@@ -477,20 +477,13 @@
     width: var(--sidebar-width-collapsed);
     transform: translateX(0);
   }
-
-  /* En desktop, el contenido ocupa todo el ancho, el padding se maneja en los componentes internos */
-  .main-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: 0 !important;
-  }
 }
 
 /* Botón hamburguesa para móviles */
 .mobile-menu-button {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
   z-index: 1000;
   width: 44px;
   height: 44px;
@@ -536,16 +529,11 @@
   }
 }
 
-/* Fix para que el contenido no se desplace */
+/* Fix para que el contenido no se desplace — ver layout.css */
 .main-content {
+  flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
   min-height: 100vh;
-  transition: none;
-}
-
-@media (min-width: 1025px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
+  min-height: 100dvh;
 }

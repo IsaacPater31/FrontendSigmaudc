@@ -1,38 +1,18 @@
 .plan-container {
-  padding: 20px;
-}
-.plan-container {
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
   background: #f7f7fb;
+  padding: var(--page-padding-y, 20px) var(--page-padding-x, 20px);
 }
 
-/* Ensure content is shifted right on desktop so a fixed sidebar doesn't overlap */
-@media (min-width: 1025px) {
-  .plan-container {
-    padding-left: calc(var(--sidebar-width) + 24px);
-    transition: padding-left 240ms ease;
-  }
-
-  /* When the sidebar is collapsed, use the collapsed width to avoid excessive gap */
-  .sidebar.closed ~ .main-content .plan-container {
-    padding-left: calc(var(--sidebar-width-collapsed) + 16px);
-  }
-}
-.plan-header h1 {
-  margin: 0 0 6px 0;
-}
-.plan-header p {
-  margin: 0 0 12px 0;
-  color: #555;
-}
 .plan-controls {
   display: flex;
   gap: 20px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 .control-block {
   flex: 1 1 320px;
@@ -56,8 +36,42 @@
 .plan-list .empty { color: #666; padding: 12px 0; }
 .asignaturas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 12px;
+  width: 100%;
+}
+
+.dialog-card {
+  width: min(96vw, 900px);
+  max-width: 100%;
+}
+
+@media (min-width: 1921px) {
+  .asignaturas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+
+  .dialog-card {
+    width: min(80vw, 1100px);
+  }
+}
+
+@media (max-width: 767px) {
+  .plan-controls {
+    flex-direction: column;
+  }
+
+  .control-block {
+    width: 100%;
+  }
+}
+
+.plan-header h1 {
+  margin: 0 0 6px 0;
+}
+.plan-header p {
+  margin: 0 0 12px 0;
+  color: #555;
 }
 .asignatura-card {
   border: 1px solid #e8e8e8;

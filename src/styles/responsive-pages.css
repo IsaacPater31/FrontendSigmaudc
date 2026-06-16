@@ -1,0 +1,214 @@
+/* ============================================
+   OVERRIDES RESPONSIVOS — Todas las páginas
+   Ancho completo, sin doble offset de sidebar
+   ============================================ */
+
+/* Contenedores principales: ancho completo */
+.home-estudiante,
+.home-jefe,
+.inscribir-container,
+.consultar-matricula-container,
+.pensum-container,
+.subir-container,
+.datos-page,
+.plazos-container,
+.verificar-documentos-container,
+.validar-solicitudes-container,
+.plan-container,
+.modificaciones-container,
+.hoja-container,
+.login-container,
+.set-password-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto;
+  overflow-x: hidden;
+}
+
+/* Quitar offset duplicado del sidebar (lo maneja .main-content) */
+@media (min-width: 1025px) {
+  .home-estudiante,
+  .home-jefe,
+  .inscribir-container,
+  .consultar-matricula-container,
+  .pensum-container,
+  .datos-page,
+  .plazos-container,
+  .verificar-documentos-container,
+  .validar-solicitudes-container,
+  .plan-container,
+  .modificaciones-container {
+    padding-left: var(--page-padding-x, clamp(12px, 2.5vw, 48px)) !important;
+    padding-right: var(--page-padding-x, clamp(12px, 2.5vw, 48px)) !important;
+  }
+}
+
+/* Móvil: espacio para botón hamburguesa + padding lateral */
+@media (max-width: 1024px) {
+  .home-estudiante,
+  .home-jefe,
+  .inscribir-container,
+  .consultar-matricula-container,
+  .pensum-container,
+  .subir-container,
+  .datos-page,
+  .plazos-container,
+  .verificar-documentos-container,
+  .validar-solicitudes-container,
+  .plan-container,
+  .modificaciones-container {
+    padding-top: max(12px, env(safe-area-inset-top, 0px)) !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+  }
+}
+
+/* iPhone SE y pantallas muy pequeñas */
+@media (max-width: 374px) {
+  :root {
+    --page-padding-x: 10px;
+    --mobile-header-offset: 68px;
+  }
+}
+
+/* Grids que deben expandirse en pantallas grandes */
+.solicitudes-grid {
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+  width: 100%;
+}
+
+.dashboard-grid {
+  width: 100%;
+}
+
+.info-card-grid {
+  width: 100%;
+}
+
+.datos-content-grid {
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)) !important;
+}
+
+@media (min-width: 1921px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@media (min-width: 2560px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+
+  .solicitudes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)) !important;
+  }
+}
+
+
+/* Horarios: scroll interno, no romper layout */
+.horario-grid-wrapper,
+.horario-grid,
+.validar-solicitudes-container .horario-grid-wrapper,
+.consultar-matricula-container .horario-grid-wrapper,
+.inscribir-container .horario-grid-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Headers flexibles en todas las páginas */
+.validar-header,
+.inscribir-header,
+.consultar-header,
+.plazos-header,
+.verificar-header,
+.plan-header,
+.subir-header,
+.datos-hero {
+  flex-wrap: wrap;
+  width: 100%;
+  gap: var(--content-gap, 16px);
+}
+
+/* Modales inline en JSX → clase utilitaria */
+.app-modal-panel {
+  width: min(96vw, 900px);
+  max-height: min(90vh, 900px);
+  overflow: auto;
+}
+
+@media (min-width: 1921px) {
+  .app-modal-panel {
+    width: min(80vw, 1200px);
+  }
+}
+
+/* Hoja de vida legacy */
+.hoja-container {
+  width: 100%;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  min-height: 100vh;
+}
+
+.hoja-container .card {
+  width: 100%;
+  max-width: min(100%, 720px);
+  margin-inline: auto;
+}
+
+@media (max-width: 767px) {
+  .hoja-container .card__info {
+    grid-template-columns: 1fr;
+  }
+
+  .hoja-container .card__body {
+    padding: 75px 20px 24px;
+  }
+}
+
+/* Datos estudiante / jefe */
+.datos-main-card,
+.datos-panel {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+.datos-hero-text {
+  min-width: 0 !important;
+}
+
+/* Subir: tarjeta centrada pero ancho fluido */
+.subir-container {
+  display: block !important;
+}
+
+.subir-container .upload-card {
+  width: 100%;
+  max-width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+@media (min-width: 1921px) {
+  .subir-container .upload-card {
+    max-width: min(100%, 1100px);
+  }
+}
+
+/* Login en pantallas TV: no estirar demasiado el panel */
+@media (min-width: 1921px) {
+  .login-card,
+  .set-password-card {
+    max-width: min(520px, 40vw);
+  }
+}
+
+@media (min-width: 2560px) {
+  .login-card,
+  .set-password-card {
+    max-width: min(560px, 35vw);
+  }
+}

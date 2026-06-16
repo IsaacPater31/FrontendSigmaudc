@@ -129,7 +129,7 @@ const Modificaciones = () => {
   
 
   return (
-    <div className="inscribir-container">
+    <div className="modificaciones-container">
       <div className="inscribir-header">
         <h1>Consultar Matricula</h1>
         <p>Busca un estudiante por su código para consultar su matrícula. Puedes matricular o desmatricular asignaturas.</p>

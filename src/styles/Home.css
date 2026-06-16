@@ -1058,18 +1058,10 @@
 @media (min-width: 1025px) {
   .home-estudiante,
   .home-jefe {
-    padding: 40px 32px;
+    padding: var(--page-padding-y, 40px) var(--page-padding-x, 32px);
     margin-left: 0;
     width: 100%;
     max-width: 100%;
-    padding-left: calc(280px + 32px); /* sidebar width (280px) + padding (32px) */
-    transition: padding-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Cuando sidebar está cerrado en desktop */
-  html.sidebar-closed .home-estudiante,
-  html.sidebar-closed .home-jefe {
-    padding-left: calc(70px + 32px); /* sidebar collapsed (70px) + padding (32px) */
   }
 
   .est-hero-content,
@@ -1162,14 +1154,7 @@
 @media (min-width: 1441px) {
   .home-estudiante,
   .home-jefe {
-    padding: 48px 40px;
-    padding-left: calc(280px + 40px); /* sidebar (280px) + padding (40px) */
-  }
-
-  /* Cuando sidebar está cerrado */
-  html.sidebar-closed .home-estudiante,
-  html.sidebar-closed .home-jefe {
-    padding-left: calc(70px + 40px); /* sidebar collapsed (70px) + padding (40px) */
+    padding: var(--page-padding-y, 48px) var(--page-padding-x, 40px);
   }
 
   .est-hero-content,
@@ -1210,15 +1195,8 @@
 @media (min-width: 1921px) {
   .home-estudiante,
   .home-jefe {
-    padding: 64px 56px;
+    padding: var(--page-padding-y, 64px) var(--page-padding-x, 56px);
     max-width: 100%;
-    padding-left: calc(280px + 56px); /* sidebar (280px) + padding (56px) */
-  }
-
-  /* Cuando sidebar está cerrado */
-  html.sidebar-closed .home-estudiante,
-  html.sidebar-closed .home-jefe {
-    padding-left: calc(70px + 56px); /* sidebar collapsed (70px) + padding (56px) */
   }
 
   .est-hero-content,
@@ -1308,6 +1286,34 @@
 
   .dashboard-card p {
     font-size: 18px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .info-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .home-estudiante,
+  .home-jefe {
+    padding: var(--page-padding-y, 72px) var(--page-padding-x, 80px);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 40px;
+  }
+
+  .info-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+
+  .section-title {
+    font-size: 52px;
   }
 }
 

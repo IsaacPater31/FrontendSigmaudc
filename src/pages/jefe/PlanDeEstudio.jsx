@@ -314,7 +314,7 @@ const PlanDeEstudio = () => {
 
         {modalOpen && modalGrupo && (
           <div className="dialog-overlay" role="presentation">
-            <div className="dialog-card" style={{ maxWidth: 800 }}>
+            <div className="dialog-card app-modal-panel">
               <p className="dialog-title">
                 Editar grupo — {modalGrupo.codigo} ({modalGrupo.asignatura_nombre})
               </p>

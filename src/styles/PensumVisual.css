@@ -1798,14 +1798,7 @@
 /* Desktop pequeño (1025px+) */
 @media (min-width: 1025px) {
   .pensum-container {
-    padding: 32px;
-    padding-left: calc(280px + 32px); /* sidebar width (280px) + padding (32px) */
-    transition: padding-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Cuando sidebar está cerrado en desktop */
-  html.sidebar-closed .pensum-container {
-    padding-left: calc(70px + 32px); /* sidebar collapsed (70px) + padding (32px) */
+    padding: var(--page-padding-y, 32px) var(--page-padding-x, 32px);
   }
 
   .semestre-column {
@@ -1826,12 +1819,7 @@
 /* Desktop grande (1441px+) */
 @media (min-width: 1441px) {
   .pensum-container {
-    padding: 40px;
-    padding-left: calc(280px + 40px);
-  }
-
-  html.sidebar-closed .pensum-container {
-    padding-left: calc(70px + 40px);
+    padding: var(--page-padding-y, 40px) var(--page-padding-x, 40px);
   }
 
   .semestre-column {
@@ -1852,12 +1840,7 @@
 /* Pantallas extra grandes (1921px+) */
 @media (min-width: 1921px) {
   .pensum-container {
-    padding: 56px;
-    padding-left: calc(280px + 56px);
-  }
-
-  html.sidebar-closed .pensum-container {
-    padding-left: calc(70px + 56px);
+    padding: var(--page-padding-y, 56px) var(--page-padding-x, 56px);
   }
 
   .semestre-column {

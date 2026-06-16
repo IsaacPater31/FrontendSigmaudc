@@ -22,27 +22,13 @@
 
 .verificar-documentos-container {
   width: 100%;
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 16px 12px;
+  padding: var(--page-padding-y, 16px) var(--page-padding-x, 12px);
   min-height: 100vh;
   background: var(--jefe-bg-primary);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
-}
-
-/* Ensure content is shifted right on desktop so a fixed sidebar doesn't overlap */
-@media (min-width: 1025px) {
-  .verificar-documentos-container {
-    /* Use the sidebar CSS variables so spacing matches the actual sidebar width */
-    padding-left: calc(var(--sidebar-width) + 24px);
-    transition: padding-left 240ms ease;
-  }
-
-  /* When the sidebar is collapsed, use the collapsed width to avoid excessive gap */
-  .sidebar.closed ~ .main-content .verificar-documentos-container {
-    padding-left: calc(var(--sidebar-width-collapsed) + 16px);
-  }
 }
 
 /* Header */

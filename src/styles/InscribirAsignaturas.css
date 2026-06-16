@@ -1243,13 +1243,7 @@
 
 @media (min-width: 1025px) {
   .inscribir-container {
-    padding: 40px;
-    padding-left: calc(280px + 40px);
-    transition: padding-left 0.4s;
-  }
-
-  html.sidebar-closed .inscribir-container {
-    padding-left: calc(70px + 40px);
+    padding: var(--page-padding-y, 40px) var(--page-padding-x, 40px);
   }
 }
 

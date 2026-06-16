@@ -16,14 +16,12 @@
 .datos-page {
   width: 100%;
   min-height: 100vh;
-  padding: 16px 16px 32px;
+  padding: var(--page-padding-y, 16px) var(--page-padding-x, 16px) 32px;
   background: #ffffff;
   font-family: var(--home-font-family);
   color: var(--home-text-primary);
   box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow-x: hidden;
 }
 
 .datos-card {
@@ -36,7 +34,7 @@
 
 .datos-main-card {
   width: 100%;
-  max-width: 920px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -115,7 +113,8 @@
 }
 
 .datos-panel {
-  max-width: 980px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -358,28 +357,12 @@
 }
 
 @media (min-width: 1025px) {
-  .datos-page {
-    padding-left: calc(280px + 32px);
-  }
-
-  html.sidebar-closed .datos-page {
-    padding-left: calc(70px + 32px);
-  }
-
   .datos-card {
     padding: 32px;
   }
 }
 
 @media (min-width: 1441px) {
-  .datos-page {
-    padding-left: calc(280px + 40px);
-  }
-
-  html.sidebar-closed .datos-page {
-    padding-left: calc(70px + 40px);
-  }
-
   .datos-hero-text h1 {
     font-size: 38px;
   }

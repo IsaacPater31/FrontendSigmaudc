@@ -27,28 +27,14 @@
 
 /* Contenedor Principal */
 .plazos-container {
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 12px;
+  padding: var(--page-padding-y, 12px) var(--page-padding-x, 12px);
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
   background: var(--plazos-bg-primary);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-}
-
-/* Ensure content is shifted right on desktop so a fixed sidebar doesn't overlap */
-@media (min-width: 1025px) {
-  .plazos-container {
-    /* Use the sidebar CSS variables so spacing matches the actual sidebar width */
-    padding-left: calc(var(--sidebar-width) + 24px);
-    transition: padding-left 240ms ease;
-  }
-
-  /* When the sidebar is collapsed, use the collapsed width to avoid excessive gap */
-  .sidebar.closed ~ .main-content .plazos-container {
-    padding-left: calc(var(--sidebar-width-collapsed) + 16px);
-  }
 }
 
 /* iPhone SE y móviles pequeños (320px - 374px) */

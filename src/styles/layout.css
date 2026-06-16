@@ -1,0 +1,168 @@
+/* ============================================
+   LAYOUT GLOBAL — Responsive iPhone SE → TV
+   ============================================ */
+
+:root {
+  --sidebar-width: 280px;
+  --sidebar-width-collapsed: 70px;
+  --mobile-header-offset: 72px;
+  --page-padding-x: clamp(12px, 2.5vw, 48px);
+  --page-padding-y: clamp(12px, 2vh, 32px);
+  --app-max-width: 100%;
+  --content-gap: clamp(12px, 2vw, 32px);
+
+  /* Breakpoints documentados */
+  --bp-xs: 320px;
+  --bp-sm: 375px;
+  --bp-md: 768px;
+  --bp-lg: 1025px;
+  --bp-xl: 1441px;
+  --bp-2xl: 1921px;
+  --bp-tv: 2560px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* App shell */
+.app-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  background: #e2e8f0;
+  overflow-x: hidden;
+}
+
+.app-shell-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #e2e8f0;
+}
+
+.main-content {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: var(--mobile-header-offset) 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transition: padding-left 240ms ease;
+}
+
+/* Desktop: desplazar contenido por sidebar fijo */
+@media (min-width: 1025px) {
+  .main-content {
+    padding-top: 0;
+    padding-left: var(--sidebar-width);
+  }
+
+  html.sidebar-closed .main-content {
+    padding-left: var(--sidebar-width-collapsed);
+  }
+}
+
+/* Contenedor de página reutilizable */
+.page-container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin-inline: auto;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+/* Ultra-wide / TV */
+@media (min-width: 1921px) {
+  :root {
+    --page-padding-x: clamp(32px, 3vw, 80px);
+    --page-padding-y: clamp(24px, 2.5vh, 48px);
+    --content-gap: clamp(20px, 2vw, 40px);
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --page-padding-x: clamp(48px, 4vw, 120px);
+  }
+}
+
+/* Tablas y grids con scroll horizontal controlado */
+.responsive-scroll-x {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Grids fluidos que escalan en pantallas grandes */
+.responsive-grid {
+  display: grid;
+  gap: var(--content-gap);
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+@media (min-width: 1441px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+}
+
+@media (min-width: 1921px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-content {
+    transition: none;
+  }
+}

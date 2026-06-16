@@ -629,12 +629,12 @@
 /* Desktop (1025px+) */
 @media (min-width: 1025px) {
   .consultar-matricula-container {
-    padding: 32px 24px;
-    max-width: 1400px;
+    padding: var(--page-padding-y, 32px) var(--page-padding-x, 24px);
+    max-width: 100%;
   }
 
   .asignaturas-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   }
 
   .horario-grid-wrapper {
@@ -642,37 +642,9 @@
   }
 }
 
-/* ============================================
-   AJUSTES PARA SIDEBAR EN DESKTOP
-   ============================================ */
-@media (min-width: 1025px) {
-  .consultar-matricula-container {
-    padding-left: calc(280px + 32px); /* sidebar width (280px) + padding (32px) */
-  }
-
-  /* Cuando el sidebar está colapsado */
-  .sidebar.closed ~ .main-content .consultar-matricula-container {
-    padding-left: calc(70px + 32px); /* sidebar collapsed (70px) + padding (32px) */
-  }
-}
-
-@media (min-width: 1441px) {
-  .consultar-matricula-container {
-    padding-left: calc(280px + 40px);
-  }
-
-  .sidebar.closed ~ .main-content .consultar-matricula-container {
-    padding-left: calc(70px + 40px);
-  }
-}
-
 @media (min-width: 1921px) {
-  .consultar-matricula-container {
-    padding-left: calc(280px + 56px);
-  }
-
-  .sidebar.closed ~ .main-content .consultar-matricula-container {
-    padding-left: calc(70px + 56px);
+  .asignaturas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   }
 }
 

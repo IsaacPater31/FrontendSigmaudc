@@ -30,6 +30,7 @@ import PlanDeEstudio from "./pages/jefe/PlanDeEstudio";
 import { authService } from "./services/auth";
 import ValidarSolicitudes from "./pages/jefe/ValidarSolicitudes";
 import "./App.css";
+import "./styles/responsive-pages.css";
 
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutos
 const WARNING_BEFORE_MS = 60 * 1000; // Avisar 1 minuto antes
@@ -391,7 +392,7 @@ function AppContent() {
         element={
           <ProtectedRoute>
             {roleLoading && authService.isAuthenticated() ? (
-              <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#e2e8f0" }}>
+              <div className="app-shell-loading">
                 <div className="loading-spinner">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 40, height: 40 }}>
                     <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="32">
@@ -402,7 +403,7 @@ function AppContent() {
                 </div>
               </div>
             ) : (
-            <div style={{ display: "flex", height: "100vh", background: "#e2e8f0", position: "relative", width: "100%" }}>
+            <div className="app-shell">
               {/* Backdrop overlay para sidebar en móviles */}
               <div className="sidebar-backdrop"></div>
               
@@ -433,7 +434,7 @@ function AppContent() {
                   onLogout={handleLogout}
                 />
               )}
-              <div className="main-content" style={{ width: "100%", padding: 0, overflowY: "auto", minHeight: "100vh", marginLeft: 0 }}>
+              <div className="main-content">
                 <Routes>
                   {/* Rutas para estudiantes */}
                   <Route
