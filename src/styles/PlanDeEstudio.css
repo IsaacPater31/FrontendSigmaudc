@@ -1,4 +1,5 @@
 .plan-container {
+<<<<<<< HEAD
   max-width: 100%;
   margin: 0 auto;
   min-height: 100vh;
@@ -13,28 +14,75 @@
   gap: 20px;
   margin-bottom: 18px;
   flex-wrap: wrap;
+=======
+    padding: 20px;
+}
+.plan-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    background: #f7f7fb;
+}
+
+/* Ensure content is shifted right on desktop so a fixed sidebar doesn't overlap */
+@media (min-width: 1025px) {
+    .plan-container {
+        padding-left: calc(var(--sidebar-width) + 24px);
+        transition: padding-left 240ms ease;
+    }
+
+    /* When the sidebar is collapsed, use the collapsed width to avoid excessive gap */
+    .sidebar.closed ~ .main-content .plan-container {
+        padding-left: calc(var(--sidebar-width-collapsed) + 16px);
+    }
+}
+.plan-header h1 {
+    margin: 0 0 6px 0;
+}
+.plan-header p {
+    margin: 0 0 12px 0;
+    color: #555;
+}
+.plan-controls {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+>>>>>>> 86f1a3c (Refactor Plan Page and Remove Env Example)
 }
 .control-block {
-  flex: 1 1 320px;
+    flex: 1 1 320px;
 }
 .pensum-list {
-  margin-top: 8px;
-  border: 1px solid #e6e6e6;
-  border-radius: 6px;
-  max-height: 160px;
-  overflow: auto;
+    margin-top: 8px;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    max-height: 160px;
+    overflow: auto;
 }
 .pensum-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #f1f1f1;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
 }
-.pensum-item:last-child { border-bottom: none; }
-.pensum-item:hover { background: #fafafa; }
-.pensum-item.selected { background: #eef6ff; font-weight: 600; }
+.pensum-item:last-child {
+    border-bottom: none;
+}
+.pensum-item:hover {
+    background: #fafafa;
+}
+.pensum-item.selected {
+    background: #eef6ff;
+    font-weight: 600;
+}
 
-.plan-list .empty { color: #666; padding: 12px 0; }
+.plan-list .empty {
+    color: #666;
+    padding: 12px 0;
+}
 .asignaturas-grid {
+<<<<<<< HEAD
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 12px;
@@ -72,14 +120,57 @@
 .plan-header p {
   margin: 0 0 12px 0;
   color: #555;
+=======
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+>>>>>>> 86f1a3c (Refactor Plan Page and Remove Env Example)
 }
 .asignatura-card {
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  padding: 10px;
-  background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 10px;
+    background: #fff;
 }
-.asig-header { display:flex; flex-direction: column; gap:4px; }
-.asig-codigo { font-weight:700; color:#1a3a8a; }
-.asig-nombre { color:#222; }
-.asig-meta { margin-top:8px; color:#666; font-size:13px }
+.asig-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.asig-codigo {
+    font-weight: 700;
+    color: #1a3a8a;
+}
+.asig-nombre {
+    color: #222;
+}
+.asig-meta {
+    margin-top: 8px;
+    color: #666;
+    font-size: 13px;
+}
+
+.plan-dialog-card {
+    width: min(800px, 100%);
+    max-width: 800px;
+    text-align: left;
+}
+
+.plan-horario-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.plan-horario-salon {
+    flex: 1 1 180px;
+    min-width: 160px;
+}
+
+@media (max-width: 640px) {
+    .plan-horario-row > * {
+        width: 100%;
+    }
+}
