@@ -82,22 +82,6 @@ export const matriculaService = {
     return response.data;
   },
 
-  // Retirar una materia
-  async retirarMateria(historialId) {
-    const response = await api.post('/api/matricula/retirar-materia', {
-      historial_id: historialId,
-    });
-    return response.data;
-  },
-
-  // Agregar una materia en modificaciones
-  async agregarMateriaModificaciones(gruposIds) {
-    const response = await api.post('/api/matricula/agregar-materia', {
-      grupos_ids: gruposIds,
-    });
-    return response.data;
-  },
-
   // Jefatura: desmatricular un grupo de un estudiante
   async jefeDesmatricular(estudianteId, grupoId) {
     const response = await api.post(`/api/modificaciones/estudiante/${estudianteId}/desmatricular`, {

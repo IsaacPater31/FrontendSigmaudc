@@ -38,7 +38,6 @@ const ModificarMatricula = () => {
   const [gruposSeleccionados, setGruposSeleccionados] = useState(new Set());
   const [gruposARetirar, setGruposARetirar] = useState(new Set()); // Nuevo: grupos a retirar en la solicitud
   const [horario, setHorario] = useState([]);
-  const [conflictos, setConflictos] = useState(new Set());
   const [resumen, setResumen] = useState(null);
   const [dialog, setDialog] = useState(null);
   const [creditosSeleccionados, setCreditosSeleccionados] = useState(0);
@@ -186,7 +185,6 @@ const ModificarMatricula = () => {
       periodo: datos.periodo,
       creditos: datos.creditos,
       estadoEstudiante: datos.estado_estudiante,
-      semestreEstudiante: datos.semestre_estudiante,
     });
     actualizarHorarioDesdeMatriculadas(datos.materias_matriculadas || []);
     return datos;
@@ -317,26 +315,6 @@ const ModificarMatricula = () => {
     setHorario(nuevoHorario);
   };
 
-  const verificarConflictoEntreSeleccionados = (grupoId, horariosGrupo) => {
-    for (const grupoSelId of gruposSeleccionados) {
-      if (grupoSelId === grupoId) continue;
-      const grupoSel = encontrarGrupoPorId(grupoSelId);
-      if (!grupoSel) continue;
-
-      for (const horarioSel of grupoSel.horarios || []) {
-        for (const horarioNuevo of horariosGrupo) {
-          if (
-            horarioSel.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioSel.hora_inicio, horarioSel.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-
   const encontrarGrupoPorId = (grupoId) => {
     for (const asignatura of asignaturas) {
       const grupo = asignatura.grupos?.find((g) => g.id === grupoId);
@@ -345,32 +323,9 @@ const ModificarMatricula = () => {
     return null;
   };
 
-  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
-    const [h1, m1] = inicio1.split(':').map(Number);
-    const [h2, m2] = fin1.split(':').map(Number);
-    const [h3, m3] = inicio2.split(':').map(Number);
-    const [h4, m4] = fin2.split(':').map(Number);
-    
-    const inicio1Min = h1 * 60 + m1;
-    const fin1Min = h2 * 60 + m2;
-    const inicio2Min = h3 * 60 + m3;
-    const fin2Min = h4 * 60 + m4;
-    
-    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
-  };
-
   // Modificado: toggleGrupo ahora solo marca para la solicitud
   const toggleGrupo = (grupoId, asignatura) => {
     if (asignatura.estado === "cursada") {
-      return;
-    }
-
-    const semestreEstudiante = resumen?.semestreEstudiante ?? 0;
-    if (Number(asignatura.semestre) <= semestreEstudiante) {
-      openDialog(
-        "Semestre no permitido",
-        "En modificaciones solo puedes agregar asignaturas de semestres superiores al tuyo. Para materias de tu semestre o anteriores, usa la opción de retiro si ya están matriculadas."
-      );
       return;
     }
 
@@ -388,9 +343,7 @@ const ModificarMatricula = () => {
       return;
     }
 
-    // Verificar cupo
-    if (grupo.cupo_disponible <= 0) {
-      openDialog("Sin cupo", "Este grupo ya no tiene cupos disponibles en este momento.");
+    if (grupo.cupo_disponible <= 0 && !gruposSeleccionados.has(grupoId)) {
       return;
     }
 
@@ -401,26 +354,9 @@ const ModificarMatricula = () => {
       actualizarHorario(nuevosSeleccionados);
       setCreditosSeleccionados((prev) => Math.max(prev - asignatura.creditos, 0));
     } else {
-      // Verificar conflicto antes de marcar
-      if (verificarConflictoEntreSeleccionados(grupoId, grupo.horarios || [])) {
-        setConflictos(new Set([...conflictos, grupoId]));
-        openDialog("Conflicto de horario", "Este grupo choca con otra asignatura que ya seleccionaste.");
-        return;
-      }
-
-      const creditosDisponibles = resumen?.creditos?.disponibles ?? 0;
-      if (creditosSeleccionados + asignatura.creditos > creditosDisponibles) {
-        openDialog(
-          "Límite de créditos excedido",
-          "Seleccionaste más créditos de los que permite tu semestre actual."
-        );
-        return;
-      }
-
       const nuevosSeleccionados = new Set([...gruposSeleccionados, grupoId]);
       setGruposSeleccionados(nuevosSeleccionados);
       actualizarHorario(nuevosSeleccionados);
-      setConflictos(new Set([...conflictos].filter((id) => id !== grupoId)));
       setCreditosSeleccionados((prev) => prev + asignatura.creditos);
     }
   };
@@ -455,55 +391,12 @@ const ModificarMatricula = () => {
     try {
       setEnviandoSolicitud(true);
       
-      // Preparar grupos a agregar con información completa
-      const gruposAgregarCompletos = Array.from(gruposSeleccionados).map(gid => {
-        const grupo = encontrarGrupoPorId(gid);
-        const asignatura = asignaturas.find((a) => a.grupos?.some((g) => g.id === gid));
-        if (!grupo || !asignatura) return null;
-        return {
-          grupo_id: gid,
-          grupo_codigo: grupo.codigo,
-          asignatura_id: asignatura.id,
-          asignatura_codigo: asignatura.codigo,
-          asignatura_nombre: asignatura.nombre,
-          creditos: asignatura.creditos,
-          docente: grupo.docente || null,
-        };
-      }).filter(Boolean);
-      
-      // Preparar grupos a retirar con información completa
-      const gruposRetirarCompletos = Array.from(gruposARetirar).map(historialId => {
-        const materia = materiasMatriculadas.find(m => m.historial_id === historialId);
-        if (!materia) return null;
-        return {
-          historial_id: historialId,
-          grupo_id: materia.grupo_id,
-          grupo_codigo: materia.grupo_codigo,
-          asignatura_id: materia.asignatura_id,
-          asignatura_codigo: materia.codigo,
-          asignatura_nombre: materia.nombre,
-          creditos: materia.creditos,
-        };
-      }).filter(Boolean);
+      const gruposAgregar = Array.from(gruposSeleccionados);
+      const gruposRetirar = Array.from(gruposARetirar);
 
-      const semestreEstudiante = resumen?.semestreEstudiante ?? 0;
-      const asignaturaSemestreInvalida = gruposAgregarCompletos.find(
-        (grupo) => {
-          const asignatura = asignaturas.find((a) => a.id === grupo.asignatura_id);
-          return asignatura && Number(asignatura.semestre) <= semestreEstudiante;
-        }
-      );
-      if (asignaturaSemestreInvalida) {
-        openDialog(
-          "Semestre no permitido",
-          "En modificaciones solo puedes agregar asignaturas de semestres superiores al tuyo. Para materias de tu semestre o anteriores, usa la opción de retiro."
-        );
-        return;
-      }
-      
       await matriculaService.crearSolicitudModificacion({
-        grupos_agregar: gruposAgregarCompletos,
-        grupos_retirar: gruposRetirarCompletos,
+        grupos_agregar: gruposAgregar,
+        grupos_retirar: gruposRetirar,
       });
 
       setGruposSeleccionados(new Set());
@@ -1129,7 +1022,6 @@ const ModificarMatricula = () => {
                       <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
-                            const tieneConflicto = conflictos.has(grupo.id);
                             const cupoMaximo = Math.max(grupo.cupo_max || 0, 0);
                             const cupoDisponibleReal = Math.max(grupo.cupo_disponible || 0, 0);
                             const cupoDisponibleSeguro = Math.min(cupoDisponibleReal, cupoMaximo);
@@ -1138,7 +1030,7 @@ const ModificarMatricula = () => {
                             return (
                               <div
                                 key={grupo.id}
-                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${tieneConflicto ? "conflicto" : ""} ${sinCupo ? "sin-cupo" : ""}`}
+                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${sinCupo ? "sin-cupo" : ""}`}
                               >
                                 <label className="grupo-checkbox-label">
                                   <input
@@ -1176,11 +1068,6 @@ const ModificarMatricula = () => {
                                         Sin cupo disponible
                                       </div>
                                     )}
-                                    {tieneConflicto && (
-                                      <div className="grupo-conflicto-text">
-                                        Conflicto de horario
-                                      </div>
-                                    )}
                                   </div>
                                 </label>
                               </div>
@@ -1192,31 +1079,6 @@ const ModificarMatricula = () => {
                 })
               )}
             </div>
-
-            {gruposSeleccionados.size > 0 && (
-              <div className="inscribir-actions">
-                <button
-                  className="btn-inscribir"
-                  onClick={async () => {
-                    try {
-                      await matriculaService.agregarMateriaModificaciones(Array.from(gruposSeleccionados));
-                      setGruposSeleccionados(new Set());
-                      setCreditosSeleccionados(0);
-                      openDialog(
-                        "Materia agregada",
-                        "La(s) materia(s) han sido agregadas correctamente.",
-                        () => validarYcargar(),
-                      );
-                    } catch (error) {
-                      const razon = getErrorReason(error, "Error al agregar la materia. Por favor, intenta nuevamente.");
-                      openDialog("No se pudo agregar", razon);
-                    }
-                  }}
-                >
-                  Agregar {gruposSeleccionados.size} {gruposSeleccionados.size === 1 ? "grupo" : "grupos"}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -13,7 +13,6 @@ const InscribirAsignaturas = () => {
   const [gruposSeleccionados, setGruposSeleccionados] = useState(new Set());
   const [horario, setHorario] = useState([]);
   const [materiasMatriculadas, setMateriasMatriculadas] = useState([]); // Nuevo: materias ya inscritas
-  const [conflictos, setConflictos] = useState(new Set());
   const [resumen, setResumen] = useState(null);
   const [mensajes, setMensajes] = useState([]);
   const [dialog, setDialog] = useState(null);
@@ -249,46 +248,12 @@ const InscribirAsignaturas = () => {
     }
   };
 
-  const verificarConflictoEntreSeleccionados = (grupoId, horariosGrupo) => {
-    for (const grupoSelId of gruposSeleccionados) {
-      if (grupoSelId === grupoId) continue;
-      const grupoSel = encontrarGrupoPorId(grupoSelId);
-      if (!grupoSel) continue;
-
-      for (const horarioSel of grupoSel.horarios || []) {
-        for (const horarioNuevo of horariosGrupo) {
-          if (
-            horarioSel.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioSel.hora_inicio, horarioSel.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-
   const encontrarGrupoPorId = (grupoId) => {
     for (const asignatura of asignaturas) {
       const grupo = asignatura.grupos?.find((g) => g.id === grupoId);
       if (grupo) return grupo;
     }
     return null;
-  };
-
-  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
-    const [h1, m1] = inicio1.split(':').map(Number);
-    const [h2, m2] = fin1.split(':').map(Number);
-    const [h3, m3] = inicio2.split(':').map(Number);
-    const [h4, m4] = fin2.split(':').map(Number);
-    
-    const inicio1Min = h1 * 60 + m1;
-    const fin1Min = h2 * 60 + m2;
-    const inicio2Min = h3 * 60 + m3;
-    const fin2Min = h4 * 60 + m4;
-    
-    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
   };
 
   const toggleGrupo = (grupoId, asignatura) => {
@@ -309,9 +274,8 @@ const InscribirAsignaturas = () => {
       return;
     }
 
-    // Verificar cupo
-    if (grupo.cupo_disponible <= 0) {
-      openDialog("Sin cupo", "Este grupo ya no tiene cupos disponibles en este momento.");
+    // Verificar cupo solo para deshabilitar visualmente (el backend valida al inscribir)
+    if (grupo.cupo_disponible <= 0 && !gruposSeleccionados.has(grupoId)) {
       return;
     }
 
@@ -323,27 +287,9 @@ const InscribirAsignaturas = () => {
       actualizarHorario(nuevosSeleccionados);
       setCreditosSeleccionados((prev) => Math.max(prev - asignatura.creditos, 0));
     } else {
-      // Verificar conflicto antes de marcar
-      if (verificarConflictoEntreSeleccionados(grupoId, grupo.horarios || [])) {
-        setConflictos(new Set([...conflictos, grupoId]));
-        openDialog("Conflicto de horario", "Este grupo choca con otra asignatura que ya seleccionaste.");
-        return;
-      }
-
-      const creditosDisponibles = resumen?.creditos?.disponibles ?? 0;
-      if (creditosSeleccionados + asignatura.creditos > creditosDisponibles) {
-        openDialog(
-          "Límite de créditos excedido",
-          "Seleccionaste más créditos de los que permite tu semestre actual."
-        );
-        return;
-      }
-
-      // Marcar
       const nuevosSeleccionados = new Set([...gruposSeleccionados, grupoId]);
       setGruposSeleccionados(nuevosSeleccionados);
       actualizarHorario(nuevosSeleccionados);
-      setConflictos(new Set([...conflictos].filter((id) => id !== grupoId)));
       setCreditosSeleccionados((prev) => prev + asignatura.creditos);
     }
   };
@@ -861,7 +807,6 @@ const InscribirAsignaturas = () => {
                       <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
-                            const tieneConflicto = conflictos.has(grupo.id);
                             const cupoMaximo = Math.max(grupo.cupo_max || 0, 0);
                             const cupoDisponibleReal = Math.max(grupo.cupo_disponible || 0, 0);
                             const cupoDisponibleSeguro = Math.min(cupoDisponibleReal, cupoMaximo);
@@ -871,7 +816,7 @@ const InscribirAsignaturas = () => {
                             return (
                               <div
                                 key={grupo.id}
-                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${tieneConflicto ? "conflicto" : ""} ${sinCupo ? "sin-cupo" : ""} ${esObligatorio ? "obligatorio" : ""}`}
+                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${sinCupo ? "sin-cupo" : ""} ${esObligatorio ? "obligatorio" : ""}`}
                               >
                                 <label className="grupo-checkbox-label">
                                     <input
