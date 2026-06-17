@@ -139,8 +139,6 @@ const ModificarMatricula = () => {
       setCreditosSeleccionados(nuevosCreditos);
       return next;
     });
-
-    setConflictos((prev) => new Set(Array.from(prev).filter((gid) => gruposDisponibles.has(gid))));
   };
 
   useEffect(() => {
