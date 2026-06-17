@@ -2,7 +2,30 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
 import "../../styles/InscribirAsignaturas.css";
-import { FaCheckCircle, FaTimesCircle, FaSpinner, FaClock, FaExclamationTriangle } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaSpinner, FaClock, FaHistory, FaTimes, FaClipboardList } from "react-icons/fa";
+
+const parseJsonArray = (val) => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+const formatFechaCorta = (fecha) => {
+  if (!fecha) return "—";
+  return new Date(fecha).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const etiquetaComponente = (componente) => (componente === "laboratorio" ? "Lab" : "Teo");
 
@@ -24,6 +47,7 @@ const ModificarMatricula = () => {
   const [solicitudPendiente, setSolicitudPendiente] = useState(null);
   const [historialSolicitudes, setHistorialSolicitudes] = useState([]);
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+  const [historialAbierto, setHistorialAbierto] = useState(false);
   const [asignaturasPage, setAsignaturasPage] = useState(1);
   const [paginacionAsignaturas, setPaginacionAsignaturas] = useState({
     page: 1,
@@ -85,42 +109,19 @@ const ModificarMatricula = () => {
   // Horas del día (7am - 10pm)
   const horas = Array.from({ length: 16 }, (_, i) => 7 + i);
 
-  const hayCruceConMateriasMatriculadas = (horariosGrupo = [], materiasActuales = []) => {
-    for (const materia of materiasActuales) {
-      for (const horarioMat of materia.horarios || []) {
-        for (const horarioNuevo of horariosGrupo || []) {
-          if (
-            horarioMat.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioMat.hora_inicio, horarioMat.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-
-  const normalizeAsignaturasConCupo = (asignaturasRaw = [], materiasActuales = []) => {
-    return (asignaturasRaw || []).map((asignatura) => {
-      const gruposConCupo = (asignatura.grupos || [])
-        .map((grupo) => {
-          const cupoMaximo = Math.max(Number(grupo.cupo_max || 0), 0);
-          const cupoDisponible = Math.min(Math.max(Number(grupo.cupo_disponible || 0), 0), cupoMaximo);
-          return {
-            ...grupo,
-            cupo_max: cupoMaximo,
-            cupo_disponible: cupoDisponible,
-          };
-        })
-        .filter((grupo) => grupo.cupo_disponible > 0)
-        .filter((grupo) => !hayCruceConMateriasMatriculadas(grupo.horarios || [], materiasActuales));
-
-      return {
-        ...asignatura,
-        grupos: gruposConCupo,
-      };
-    });
+  const normalizeAsignaturasFromAPI = (asignaturasRaw = []) => {
+    return (asignaturasRaw || []).map((asignatura) => ({
+      ...asignatura,
+      grupos: (asignatura.grupos || []).map((grupo) => {
+        const cupoMaximo = Math.max(Number(grupo.cupo_max || 0), 0);
+        const cupoDisponible = Math.min(Math.max(Number(grupo.cupo_disponible || 0), 0), cupoMaximo);
+        return {
+          ...grupo,
+          cupo_max: cupoMaximo,
+          cupo_disponible: cupoDisponible,
+        };
+      }),
+    }));
   };
 
   const reconciliarSeleccionConOferta = (asignaturasOferta = []) => {
@@ -144,6 +145,19 @@ const ModificarMatricula = () => {
   };
 
   useEffect(() => {
+    if (!historialAbierto) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setHistorialAbierto(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [historialAbierto]);
+
+  useEffect(() => {
     validarYcargar();
   }, [asignaturasPage]);
 
@@ -155,8 +169,7 @@ const ModificarMatricula = () => {
       asignaturas_page_size: 25,
     });
     setMateriasMatriculadas(datos.materias_matriculadas || []);
-    const materiasActuales = datos.materias_matriculadas || [];
-    const ofertaNormalizada = normalizeAsignaturasConCupo(datos.asignaturas_disponibles || [], materiasActuales);
+    const ofertaNormalizada = normalizeAsignaturasFromAPI(datos.asignaturas_disponibles || []);
     setAsignaturas(ofertaNormalizada);
     setPaginacionAsignaturas(
       datos.paginacion_asignaturas || {
@@ -304,24 +317,9 @@ const ModificarMatricula = () => {
     setHorario(nuevoHorario);
   };
 
-  const verificarConflicto = (grupoId, horariosGrupo) => {
-    // Verificar contra materias ya matriculadas
-    for (const mat of materiasMatriculadas) {
-      if (!mat.horarios) continue;
-      for (const horarioMat of mat.horarios) {
-        for (const horarioNuevo of horariosGrupo) {
-          if (
-            horarioMat.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioMat.hora_inicio, horarioMat.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-
-    // Verificar contra grupos seleccionados
+  const verificarConflictoEntreSeleccionados = (grupoId, horariosGrupo) => {
     for (const grupoSelId of gruposSeleccionados) {
+      if (grupoSelId === grupoId) continue;
       const grupoSel = encontrarGrupoPorId(grupoSelId);
       if (!grupoSel) continue;
 
@@ -404,9 +402,9 @@ const ModificarMatricula = () => {
       setCreditosSeleccionados((prev) => Math.max(prev - asignatura.creditos, 0));
     } else {
       // Verificar conflicto antes de marcar
-      if (verificarConflicto(grupoId, grupo.horarios || [])) {
+      if (verificarConflictoEntreSeleccionados(grupoId, grupo.horarios || [])) {
         setConflictos(new Set([...conflictos, grupoId]));
-        openDialog("Conflicto de horario", "Este grupo tiene un choque con otra asignatura que ya tienes matriculada o seleccionada.");
+        openDialog("Conflicto de horario", "Este grupo choca con otra asignatura que ya seleccionaste.");
         return;
       }
 
@@ -590,71 +588,92 @@ const ModificarMatricula = () => {
   const creditosDisponiblesBackend = resumen?.creditos?.disponibles ?? 0;
   const creditosDisponiblesActual = Math.max(creditosDisponiblesBackend - creditosSeleccionados, 0);
 
-  // Renderizar estado de solicitud
-  const renderEstadoSolicitud = () => {
-    if (!solicitudPendiente && historialSolicitudes.length === 0) return null;
+  const renderHistorialModal = () => {
+    if (!historialAbierto) return null;
 
     return (
-      <section className="solicitudes-section">
-        {/* Solicitud pendiente */}
-        {solicitudPendiente && (
-          <article className="solicitud-status-card pendiente">
-            <div className="solicitud-status-header">
-              <span className="solicitud-status-icon warning">
-                <FaClock />
-              </span>
-              <div>
-                <p className="solicitud-status-title">Solicitud pendiente</p>
-                <p className="solicitud-status-subtitle">
-                  Enviada: {new Date(solicitudPendiente.fecha_solicitud).toLocaleString('es-ES')}
-                </p>
-              </div>
+      <div
+        className="historial-modal-overlay"
+        onClick={() => setHistorialAbierto(false)}
+        role="presentation"
+      >
+        <div
+          className="historial-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="historial-modal-title"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <header className="historial-modal-header">
+            <button
+              type="button"
+              className="historial-modal-close"
+              onClick={() => setHistorialAbierto(false)}
+              aria-label="Cerrar historial"
+            >
+              <FaTimes />
+            </button>
+            <div className="historial-modal-heading">
+              <h2 id="historial-modal-title">Historial</h2>
+              <p>Solicitudes revisadas por jefatura</p>
             </div>
-            <p className="solicitud-status-text">
-              Tienes una solicitud de modificación pendiente de revisión.
-              No puedes enviar otra hasta que sea procesada.
-            </p>
-          </article>
-        )}
+          </header>
 
-        {/* Historial de solicitudes procesadas */}
-        {historialSolicitudes.length > 0 && (
-          <div className="solicitudes-historial">
-            <div className="solicitudes-historial-header">
-              <h3>Historial de solicitudes</h3>
-              <span>{historialSolicitudes.length} registradas</span>
-            </div>
-            {historialSolicitudes.map((sol) => (
-              <article
-                key={sol.id}
-                className={`solicitud-history-card ${sol.estado === 'aprobada' ? 'aprobada' : 'rechazada'}`}
-              >
-                <div className="solicitud-history-header">
-                  <span className={`solicitud-status-icon ${sol.estado === 'aprobada' ? 'success' : 'danger'}`}>
-                    {sol.estado === 'aprobada' ? <FaCheckCircle /> : <FaTimesCircle />}
-                  </span>
-                  <strong className="solicitud-history-title">
-                    Solicitud #{sol.id} · {sol.estado === 'aprobada' ? 'Aprobada' : 'Rechazada'}
-                  </strong>
-                  <span className="solicitud-history-date">
-                    {new Date(sol.fecha_revision || sol.fecha_solicitud).toLocaleString('es-ES')}
-                  </span>
-                </div>
-                {sol.estado === 'rechazada' && (
-                  <div className="solicitud-reason-box">
-                    <p className="solicitud-reason-label">Motivo del rechazo</p>
-                    <p className="solicitud-reason-text">
-                      {sol.observacion || "No se registró observación por parte de jefatura."}
-                    </p>
-                  </div>
-                )}
-              </article>
-            ))}
+          <div className="historial-modal-body">
+            {historialSolicitudes.length === 0 ? (
+              <div className="historial-modal-empty">
+                <FaClipboardList size={40} aria-hidden="true" />
+                <p>Aún no tienes solicitudes procesadas.</p>
+              </div>
+            ) : (
+              <ul className="historial-modal-list">
+                {historialSolicitudes.map((sol) => {
+                  const agregar = parseJsonArray(sol.grupos_agregar);
+                  const retirar = parseJsonArray(sol.grupos_retirar);
+                  const aprobada = sol.estado === "aprobada";
+
+                  return (
+                    <li key={sol.id} className={`historial-item ${aprobada ? "aprobada" : "rechazada"}`}>
+                      <div className="historial-item-top">
+                        <span className={`historial-item-icon ${aprobada ? "success" : "danger"}`}>
+                          {aprobada ? <FaCheckCircle /> : <FaTimesCircle />}
+                        </span>
+                        <div className="historial-item-main">
+                          <strong>{aprobada ? "Aprobada" : "Rechazada"}</strong>
+                          <time>{formatFechaCorta(sol.fecha_revision || sol.fecha_solicitud)}</time>
+                        </div>
+                      </div>
+
+                      {(agregar.length > 0 || retirar.length > 0) && (
+                        <div className="historial-item-cambios">
+                          {agregar.map((g, i) => (
+                            <span key={`a-${i}`} className="historial-chip agregar">
+                              + {g.asignatura_nombre || g.asignatura_codigo || "Asignatura"}
+                            </span>
+                          ))}
+                          {retirar.map((g, i) => (
+                            <span key={`r-${i}`} className="historial-chip retirar">
+                              − {g.asignatura_nombre || g.asignatura_codigo || "Asignatura"}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {!aprobada && sol.observacion && (
+                        <p className="historial-item-motivo">{sol.observacion}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
-        )}
-      </section>
+        </div>
+      </div>
     );
   };
+
+  const asignaturasConGrupos = asignaturas.filter((a) => (a.grupos?.length ?? 0) > 0);
 
   if (loading) {
     return (
@@ -694,7 +713,7 @@ const ModificarMatricula = () => {
 
   return (
     <div className="inscribir-container">
-      <div className="inscribir-header">
+      <div className="inscribir-header modificar-header">
         <div className="header-logo-title">
           <div className="udc-logo-container">
             <img 
@@ -708,6 +727,18 @@ const ModificarMatricula = () => {
             <p>Gestiona tus materias: retira o agrega asignaturas de semestres superiores</p>
           </div>
         </div>
+        <button
+          type="button"
+          className="btn-historial"
+          onClick={() => setHistorialAbierto(true)}
+          aria-haspopup="dialog"
+        >
+          <FaHistory aria-hidden="true" />
+          <span>Historial</span>
+          {historialSolicitudes.length > 0 && (
+            <span className="btn-historial-badge">{historialSolicitudes.length}</span>
+          )}
+        </button>
       </div>
 
       <div className="inscribir-content">
@@ -834,8 +865,17 @@ const ModificarMatricula = () => {
         {/* Columna Derecha: Materias Matriculadas y Disponibles */}
         <div className="asignaturas-column">
           <div className="asignaturas-card">
-            {/* Mostrar estado de solicitudes */}
-            {renderEstadoSolicitud()}
+            {solicitudPendiente && (
+              <article className="solicitud-pendiente-banner">
+                <FaClock aria-hidden="true" />
+                <div>
+                  <p className="solicitud-pendiente-titulo">Solicitud en revisión</p>
+                  <p className="solicitud-pendiente-texto">
+                    Enviada el {formatFechaCorta(solicitudPendiente.fecha_solicitud)}. No puedes enviar otra hasta que jefatura responda.
+                  </p>
+                </div>
+              </article>
+            )}
 
             {resumen && (
               <div className="inscribir-resumen">
@@ -880,29 +920,10 @@ const ModificarMatricula = () => {
             <div className="carrito-card">
               <h3 className="carrito-title">Solicitud de Modificación</h3>
               <p className="carrito-sub">
-                {solicitudPendiente 
-                  ? "Ya tienes una solicitud pendiente de revisión."
+                {solicitudPendiente
+                  ? "Espera la respuesta de tu solicitud pendiente."
                   : "Los cambios que selecciones aparecerán aquí. La solicitud será enviada al jefe de departamento."}
               </p>
-              
-              {/* Estado de solicitud pendiente */}
-              {solicitudPendiente && (
-                <div style={{
-                  padding: '0.75rem',
-                  backgroundColor: '#fff3cd',
-                  border: '1px solid #ffc107',
-                  borderRadius: '8px',
-                  marginBottom: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FaClock style={{ color: '#856404' }} />
-                    <strong style={{ color: '#856404' }}>Solicitud Pendiente</strong>
-                  </div>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#856404' }}>
-                    Enviada: {new Date(solicitudPendiente.fecha_solicitud).toLocaleString('es-ES')}
-                  </p>
-                </div>
-              )}
 
               {/* Lista de cambios en la solicitud */}
               <div className="carrito-list">
@@ -1072,12 +1093,12 @@ const ModificarMatricula = () => {
               </div>
             )}
             <div className="asignaturas-list">
-              {asignaturas.length === 0 ? (
+              {asignaturasConGrupos.length === 0 ? (
                 <div className="asignaturas-empty">
                   <p>No hay asignaturas disponibles para agregar en este momento.</p>
                 </div>
               ) : (
-                asignaturas.map((asignatura) => {
+                asignaturasConGrupos.map((asignatura) => {
                   const estadoClass = asignatura.estado ? `estado-${asignatura.estado}` : "";
                   const esCursada = asignatura.estado === "cursada";
                   return (
@@ -1105,8 +1126,7 @@ const ModificarMatricula = () => {
                         <span className="asignatura-state">{formatEstado(asignatura.estado)}</span>
                       </div>
 
-                      {asignatura.grupos && asignatura.grupos.length > 0 ? (
-                        <div className="grupos-list">
+                      <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
                             const tieneConflicto = conflictos.has(grupo.id);
@@ -1166,12 +1186,7 @@ const ModificarMatricula = () => {
                               </div>
                             );
                           })}
-                        </div>
-                      ) : (
-                        <div className="grupos-empty">
-                          <p>No hay grupos disponibles para esta asignatura.</p>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })
@@ -1205,6 +1220,7 @@ const ModificarMatricula = () => {
           </div>
         </div>
       </div>
+      {renderHistorialModal()}
       {dialog && (
         <div className="dialog-overlay" role="presentation">
           <div className="dialog-card">

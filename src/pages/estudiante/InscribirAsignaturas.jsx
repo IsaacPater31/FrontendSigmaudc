@@ -77,42 +77,19 @@ const InscribirAsignaturas = () => {
   // Horas del día (7am - 10pm)
   const horas = Array.from({ length: 16 }, (_, i) => 7 + i);
 
-  const hayCruceConHorarioActual = (horariosGrupo = [], materiasActuales = []) => {
-    for (const materia of materiasActuales) {
-      for (const horarioMat of materia.horarios || []) {
-        for (const horarioNuevo of horariosGrupo || []) {
-          if (
-            horarioMat.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioMat.hora_inicio, horarioMat.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-
-  const normalizeAsignaturasConCupo = (asignaturasRaw = [], materiasActuales = []) => {
-    return (asignaturasRaw || []).map((asignatura) => {
-      const gruposConCupo = (asignatura.grupos || [])
-        .map((grupo) => {
-          const cupoMaximo = Math.max(Number(grupo.cupo_max || 0), 0);
-          const cupoDisponible = Math.min(Math.max(Number(grupo.cupo_disponible || 0), 0), cupoMaximo);
-          return {
-            ...grupo,
-            cupo_max: cupoMaximo,
-            cupo_disponible: cupoDisponible,
-          };
-        })
-        .filter((grupo) => grupo.cupo_disponible > 0)
-        .filter((grupo) => !hayCruceConHorarioActual(grupo.horarios || [], materiasActuales));
-
-      return {
-        ...asignatura,
-        grupos: gruposConCupo,
-      };
-    });
+  const normalizeAsignaturasFromAPI = (asignaturasRaw = []) => {
+    return (asignaturasRaw || []).map((asignatura) => ({
+      ...asignatura,
+      grupos: (asignatura.grupos || []).map((grupo) => {
+        const cupoMaximo = Math.max(Number(grupo.cupo_max || 0), 0);
+        const cupoDisponible = Math.min(Math.max(Number(grupo.cupo_disponible || 0), 0), cupoMaximo);
+        return {
+          ...grupo,
+          cupo_max: cupoMaximo,
+          cupo_disponible: cupoDisponible,
+        };
+      }),
+    }));
   };
 
   useEffect(() => {
@@ -130,7 +107,7 @@ const InscribirAsignaturas = () => {
           const payload = Array.isArray(asignaturasData)
             ? { asignaturas: asignaturasData }
             : asignaturasData || {};
-          const nuevasAsignaturas = normalizeAsignaturasConCupo(payload.asignaturas || [], materiasMatriculadas);
+          const nuevasAsignaturas = normalizeAsignaturasFromAPI(payload.asignaturas || []);
           setAsignaturas(nuevasAsignaturas);
           setMensajes(payload.mensajes || []);
           if (payload.periodo || payload.creditos || payload.estado_estudiante) {
@@ -165,7 +142,7 @@ const InscribirAsignaturas = () => {
     });
 
     return () => unsubscribe();
-  }, [materiasMatriculadas]);
+  }, []);
 
   const validarYcargar = async () => {
     try {
@@ -227,7 +204,7 @@ const InscribirAsignaturas = () => {
         const payload = Array.isArray(asignaturasData)
           ? { asignaturas: asignaturasData }
           : asignaturasData || {};
-        const nuevasAsignaturas = normalizeAsignaturasConCupo(payload.asignaturas || [], materiasActuales);
+        const nuevasAsignaturas = normalizeAsignaturasFromAPI(payload.asignaturas || []);
         setAsignaturas(nuevasAsignaturas);
         const obligatoriosPreselected = new Set();
         let creditosIniciales = 0;
@@ -272,23 +249,9 @@ const InscribirAsignaturas = () => {
     }
   };
 
-  const verificarConflicto = (grupoId, horariosGrupo) => {
-    // Verificar contra materias ya matriculadas
-    for (const materia of materiasMatriculadas) {
-      for (const horarioMat of materia.horarios || []) {
-        for (const horarioNuevo of horariosGrupo) {
-          if (
-            horarioMat.dia === horarioNuevo.dia &&
-            haySolapamiento(horarioMat.hora_inicio, horarioMat.hora_fin, horarioNuevo.hora_inicio, horarioNuevo.hora_fin)
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-
-    // Verificar contra grupos seleccionados
+  const verificarConflictoEntreSeleccionados = (grupoId, horariosGrupo) => {
     for (const grupoSelId of gruposSeleccionados) {
+      if (grupoSelId === grupoId) continue;
       const grupoSel = encontrarGrupoPorId(grupoSelId);
       if (!grupoSel) continue;
 
@@ -361,9 +324,9 @@ const InscribirAsignaturas = () => {
       setCreditosSeleccionados((prev) => Math.max(prev - asignatura.creditos, 0));
     } else {
       // Verificar conflicto antes de marcar
-      if (verificarConflicto(grupoId, grupo.horarios || [])) {
+      if (verificarConflictoEntreSeleccionados(grupoId, grupo.horarios || [])) {
         setConflictos(new Set([...conflictos, grupoId]));
-        openDialog("Conflicto de horario", "Este grupo tiene un choque con otra asignatura que ya seleccionaste.");
+        openDialog("Conflicto de horario", "Este grupo choca con otra asignatura que ya seleccionaste.");
         return;
       }
 
@@ -479,6 +442,8 @@ const InscribirAsignaturas = () => {
 
   // Filtrado en frontend (se puede cambiar a backend llamando matriculaService.buscarAsignaturas)
   const filteredAsignaturas = asignaturas.filter((a) => {
+    if ((a.grupos?.length ?? 0) === 0) return false;
+
     const codigo = (a.codigo || a.code || '').toString().toLowerCase();
     const nombre = (a.nombre || a.name || '').toString().toLowerCase();
     const programa = a.programa || a.programa_academico || a.facultad || '';
@@ -860,7 +825,7 @@ const InscribirAsignaturas = () => {
             </div>
           )}
             <div className="asignaturas-list">
-              {asignaturas.length === 0 ? (
+              {filteredAsignaturas.length === 0 ? (
                 <div className="asignaturas-empty">
                   <p>No hay asignaturas disponibles para inscripción en este momento.</p>
                 </div>
@@ -877,16 +842,13 @@ const InscribirAsignaturas = () => {
                                   <span className="asignatura-codigo">{asignatura.codigo}</span>
                                   <span className="asignatura-creditos">{asignatura.creditos} créditos</span>
                                 </div>
-                                {/* Mostrar resumen del horario de la asignatura (entradas únicas) */}
-                                {asignatura.grupos && asignatura.grupos.length > 0 && (
-                                  <div className="asignatura-horarios">
-                                    {getHorariosAsignatura(asignatura).map((hor, i) => (
-                                      <span key={i} className="horario-badge">
-                                        {etiquetaComponente(hor.componente)} {hor.dia.substring(0,3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
+                                <div className="asignatura-horarios">
+                                  {getHorariosAsignatura(asignatura).map((hor, i) => (
+                                    <span key={i} className="horario-badge">
+                                      {etiquetaComponente(hor.componente)} {hor.dia.substring(0,3)} {formatearHora(hor.hora_inicio)}-{formatearHora(hor.hora_fin)} {hor.salon}
+                                    </span>
+                                  ))}
+                                </div>
                         </div>
                         <span className="asignatura-state">{formatEstado(asignatura.estado)}</span>
                         {asignatura.obligatoria_repeticion && (
@@ -896,8 +858,7 @@ const InscribirAsignaturas = () => {
                         )}
                       </div>
 
-                      {asignatura.grupos && asignatura.grupos.length > 0 ? (
-                        <div className="grupos-list">
+                      <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
                             const tieneConflicto = conflictos.has(grupo.id);
@@ -958,12 +919,7 @@ const InscribirAsignaturas = () => {
                               </div>
                             );
                           })}
-                        </div>
-                      ) : (
-                        <div className="grupos-empty">
-                          <p>No hay grupos disponibles para esta asignatura.</p>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })
