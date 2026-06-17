@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
 import "../../styles/InscribirAsignaturas.css";
@@ -37,12 +37,11 @@ const ModificarMatricula = () => {
   const [asignaturas, setAsignaturas] = useState([]);
   const [gruposSeleccionados, setGruposSeleccionados] = useState(new Set());
   const [gruposARetirar, setGruposARetirar] = useState(new Set()); // Nuevo: grupos a retirar en la solicitud
-  const [horario, setHorario] = useState([]);
   const [resumen, setResumen] = useState(null);
   const [dialog, setDialog] = useState(null);
   const [creditosSeleccionados, setCreditosSeleccionados] = useState(0);
-  
-  // Estado para solicitudes
+  const [conflictGrupos, setConflictGrupos] = useState(new Set());
+  const [avisosUX, setAvisosUX] = useState([]);
   const [solicitudPendiente, setSolicitudPendiente] = useState(null);
   const [historialSolicitudes, setHistorialSolicitudes] = useState([]);
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
@@ -184,7 +183,6 @@ const ModificarMatricula = () => {
       creditos: datos.creditos,
       estadoEstudiante: datos.estado_estudiante,
     });
-    actualizarHorarioDesdeMatriculadas(datos.materias_matriculadas || []);
     return datos;
   };
 
@@ -301,16 +299,151 @@ const ModificarMatricula = () => {
     }
   };
 
-  const actualizarHorarioDesdeMatriculadas = (materias) => {
-    const nuevoHorario = materias.map((mat) => ({
-      grupoId: mat.grupo_id,
-      asignatura: mat.nombre,
-      codigo: mat.codigo,
-      grupoCodigo: mat.grupo_codigo,
-      docente: mat.docente,
-      horarios: mat.horarios || [],
-    }));
-    setHorario(nuevoHorario);
+  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
+    const [h1, m1] = inicio1.split(":").map(Number);
+    const [h2, m2] = fin1.split(":").map(Number);
+    const [h3, m3] = inicio2.split(":").map(Number);
+    const [h4, m4] = fin2.split(":").map(Number);
+    const inicio1Min = h1 * 60 + m1;
+    const fin1Min = h2 * 60 + m2;
+    const inicio2Min = h3 * 60 + m3;
+    const fin2Min = h4 * 60 + m4;
+    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
+  };
+
+  const horariosSeCruzan = (horariosA = [], horariosB = []) => {
+    for (const a of horariosA) {
+      for (const b of horariosB) {
+        if (
+          a.dia === b.dia &&
+          haySolapamiento(a.hora_inicio, a.hora_fin, b.hora_inicio, b.hora_fin)
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const encontrarAsignaturaPorGrupoId = (grupoId) =>
+    asignaturas.find((a) => a.grupos?.some((g) => g.id === grupoId));
+
+  const evaluarSeleccionUX = useCallback(
+    (selGrupos, selRetiros) => {
+      const avisos = [];
+      const inscritos = resumen?.creditos?.inscritos ?? 0;
+      const maximo = resumen?.creditos?.maximo ?? 0;
+      const creditosAgregar = Array.from(selGrupos).reduce((sum, gid) => {
+        const asig = encontrarAsignaturaPorGrupoId(gid);
+        return sum + (asig?.creditos || 0);
+      }, 0);
+      const creditosRetirados = materiasMatriculadas
+        .filter((m) => selRetiros.has(m.historial_id))
+        .reduce((sum, m) => sum + (m.creditos || 0), 0);
+      const creditosProyectados = inscritos - creditosRetirados + creditosAgregar;
+
+      if (creditosProyectados > maximo) {
+        avisos.push(
+          `La selección superaría el límite de ${maximo} créditos (proyectado: ${creditosProyectados}).`
+        );
+      }
+
+      const conflictos = new Set();
+      const bloques = [];
+
+      materiasMatriculadas.forEach((m) => {
+        if (!selRetiros.has(m.historial_id)) {
+          bloques.push({ id: m.grupo_id, horarios: m.horarios || [] });
+        }
+      });
+
+      Array.from(selGrupos).forEach((gid) => {
+        const grupo = asignaturas
+          .flatMap((a) => a.grupos || [])
+          .find((g) => g.id === gid);
+        if (grupo) {
+          bloques.push({ id: gid, horarios: grupo.horarios || [] });
+        }
+      });
+
+      for (let i = 0; i < bloques.length; i += 1) {
+        for (let j = i + 1; j < bloques.length; j += 1) {
+          if (horariosSeCruzan(bloques[i].horarios, bloques[j].horarios)) {
+            conflictos.add(bloques[i].id);
+            conflictos.add(bloques[j].id);
+          }
+        }
+      }
+
+      if (conflictos.size > 0) {
+        avisos.push("Hay conflicto de horario entre materias de tu selección.");
+      }
+
+      return {
+        avisos,
+        conflictos,
+        creditosProyectados,
+        creditosRetirados,
+        creditosAgregar,
+        excedeCreditos: creditosProyectados > maximo,
+      };
+    },
+    [asignaturas, materiasMatriculadas, resumen]
+  );
+
+  const horarioVisual = useMemo(() => {
+    const entries = [];
+
+    materiasMatriculadas.forEach((mat) => {
+      const esRetiro = gruposARetirar.has(mat.historial_id);
+      entries.push({
+        grupoId: mat.grupo_id,
+        asignatura: mat.nombre,
+        codigo: mat.codigo,
+        grupoCodigo: mat.grupo_codigo,
+        docente: mat.docente,
+        horarios: mat.horarios || [],
+        tipo: esRetiro ? "retirar" : "matriculada",
+      });
+    });
+
+    gruposSeleccionados.forEach((gid) => {
+      const grupo = asignaturas.flatMap((a) => a.grupos || []).find((g) => g.id === gid);
+      const asignatura = asignaturas.find((a) => a.grupos?.some((g) => g.id === gid));
+      if (!grupo) return;
+      entries.push({
+        grupoId: gid,
+        asignatura: asignatura?.nombre || "Sin nombre",
+        codigo: asignatura?.codigo || "",
+        grupoCodigo: grupo.codigo,
+        docente: grupo.docente,
+        horarios: grupo.horarios || [],
+        tipo: "agregar",
+      });
+    });
+
+    return entries;
+  }, [materiasMatriculadas, gruposSeleccionados, gruposARetirar, asignaturas]);
+
+  useEffect(() => {
+    const estado = evaluarSeleccionUX(gruposSeleccionados, gruposARetirar);
+    setConflictGrupos(estado.conflictos);
+    setAvisosUX(estado.avisos);
+  }, [gruposSeleccionados, gruposARetirar, evaluarSeleccionUX]);
+
+  const estadoSeleccion = evaluarSeleccionUX(gruposSeleccionados, gruposARetirar);
+  const creditosDisponiblesProyectados = Math.max(
+    (resumen?.creditos?.maximo ?? 0) - estadoSeleccion.creditosProyectados,
+    0
+  );
+
+  const sincronizarCreditosAgregar = (selGrupos) => {
+    let total = 0;
+    selGrupos.forEach((gid) => {
+      const asig = asignaturas.find((a) => a.grupos?.some((g) => g.id === gid));
+      if (asig) total += asig.creditos || 0;
+    });
+    setCreditosSeleccionados(total);
   };
 
   const encontrarGrupoPorId = (grupoId) => {
@@ -342,6 +475,7 @@ const ModificarMatricula = () => {
     }
 
     if (grupo.cupo_disponible <= 0 && !gruposSeleccionados.has(grupoId)) {
+      openDialog("Sin cupo", "Este grupo no tiene cupos disponibles en este momento.");
       return;
     }
 
@@ -349,13 +483,30 @@ const ModificarMatricula = () => {
       const nuevosSeleccionados = new Set(gruposSeleccionados);
       nuevosSeleccionados.delete(grupoId);
       setGruposSeleccionados(nuevosSeleccionados);
-      actualizarHorario(nuevosSeleccionados);
-      setCreditosSeleccionados((prev) => Math.max(prev - asignatura.creditos, 0));
+      sincronizarCreditosAgregar(nuevosSeleccionados);
     } else {
       const nuevosSeleccionados = new Set([...gruposSeleccionados, grupoId]);
+      const preview = evaluarSeleccionUX(nuevosSeleccionados, gruposARetirar);
+
+      if (preview.excedeCreditos) {
+        openDialog(
+          "Límite de créditos",
+          preview.avisos.find((a) => a.includes("límite")) ||
+            "Esta selección superaría tu límite de créditos."
+        );
+        return;
+      }
+
+      if (preview.conflictos.has(grupoId)) {
+        openDialog(
+          "Conflicto de horario",
+          "Este grupo choca con otra materia de tu matrícula o de tu selección."
+        );
+        return;
+      }
+
       setGruposSeleccionados(nuevosSeleccionados);
-      actualizarHorario(nuevosSeleccionados);
-      setCreditosSeleccionados((prev) => prev + asignatura.creditos);
+      sincronizarCreditosAgregar(nuevosSeleccionados);
     }
   };
 
@@ -383,6 +534,16 @@ const ModificarMatricula = () => {
 
     if (solicitudPendiente) {
       openDialog("Solicitud pendiente", "Ya tienes una solicitud de modificación pendiente. Espera a que sea revisada.");
+      return;
+    }
+
+    const preview = evaluarSeleccionUX(gruposSeleccionados, gruposARetirar);
+    if (preview.excedeCreditos) {
+      openDialog("Límite de créditos", preview.avisos.find((a) => a.includes("límite")) || "Revisa los créditos de tu selección.");
+      return;
+    }
+    if (preview.conflictos.size > 0) {
+      openDialog("Conflicto de horario", "Corrige los cruces de horario antes de enviar la solicitud.");
       return;
     }
 
@@ -414,39 +575,6 @@ const ModificarMatricula = () => {
     }
   };
 
-  const actualizarHorario = (gruposIds) => {
-    const nuevoHorario = [...horario];
-    
-    // Agregar grupos seleccionados al horario
-    for (const grupoId of gruposIds) {
-      const grupo = encontrarGrupoPorId(grupoId);
-      if (grupo && grupo.horarios) {
-        const asignatura = asignaturas.find((a) =>
-          a.grupos?.some((g) => g.id === grupoId)
-        );
-        const existe = nuevoHorario.some((h) => h.grupoId === grupoId);
-        if (!existe) {
-          nuevoHorario.push({
-            grupoId,
-            asignatura: asignatura?.nombre || "Sin nombre",
-            codigo: asignatura?.codigo || "",
-            grupoCodigo: grupo.codigo,
-            docente: grupo.docente,
-            horarios: grupo.horarios,
-          });
-        }
-      }
-    }
-    
-    // Remover grupos deseleccionados (pero mantener los matriculados)
-    const gruposMatriculados = materiasMatriculadas.map((m) => m.grupo_id);
-    const nuevoHorarioFiltrado = nuevoHorario.filter(
-      (h) => gruposMatriculados.includes(h.grupoId) || gruposIds.has(h.grupoId)
-    );
-    
-    setHorario(nuevoHorarioFiltrado);
-  };
-
   const formatearHora = (hora) => {
     const [h, m] = hora.split(':');
     return `${h}:${m}`;
@@ -467,17 +595,11 @@ const ModificarMatricula = () => {
     };
   };
 
-  const obtenerColorAsignatura = (codigo) => {
-    const hash = codigo.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colors = [
-      '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-      '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52BE80',
-    ];
-    return colors[hash % colors.length];
+  const obtenerEtiquetaTipoHorario = (tipo) => {
+    if (tipo === "agregar") return "Agregar";
+    if (tipo === "retirar") return "Retirar";
+    return "Matriculada";
   };
-
-  const creditosDisponiblesBackend = resumen?.creditos?.disponibles ?? 0;
-  const creditosDisponiblesActual = Math.max(creditosDisponiblesBackend - creditosSeleccionados, 0);
 
   const renderHistorialModal = () => {
     if (!historialAbierto) return null;
@@ -655,11 +777,18 @@ const ModificarMatricula = () => {
               </div>
             </div>
 
+            <div className="horario-leyenda" aria-label="Leyenda del horario">
+              <span className="horario-leyenda-item horario-leyenda-item--matriculada">Matriculada</span>
+              <span className="horario-leyenda-item horario-leyenda-item--agregar">Agregar</span>
+              <span className="horario-leyenda-item horario-leyenda-item--retirar">Retirar</span>
+            </div>
+
             <div className="horario-grid">
               {!showHorario ? (
                 <div className="horario-collapsed">Horario oculto. Pulsa la flecha para expandir.</div>
               ) : (
                 (() => {
+                  const horario = horarioVisual;
                   const horaTieneAsignatura = (hora) =>
                     horario.some((h) =>
                       h.horarios.some((hor) =>
@@ -721,16 +850,16 @@ const ModificarMatricula = () => {
                                     const bloqueTop = 4 + Math.min(pos.offsetDentroHora, 52);
                                     return (
                                       <div
-                                        key={idx}
-                                        className="horario-block"
+                                        key={`${h.grupoId}-${idx}`}
+                                        className={`horario-block horario-block--${h.tipo}`}
                                         style={{
-                                          backgroundColor: obtenerColorAsignatura(h.codigo),
                                           height: `${bloqueAltura}px`,
                                           top: `${bloqueTop}px`,
                                         }}
-                                        title={`${h.asignatura} - ${h.grupoCodigo}\n${h.docente}\n${horarioDia.salon}\n${formatearHora(horarioDia.hora_inicio)} - ${formatearHora(horarioDia.hora_fin)}`}
+                                        title={`${obtenerEtiquetaTipoHorario(h.tipo)}: ${h.asignatura} - ${h.grupoCodigo}\n${h.docente}\n${horarioDia.salon}\n${formatearHora(horarioDia.hora_inicio)} - ${formatearHora(horarioDia.hora_fin)}`}
                                       >
                                         <div className="horario-block-content">
+                                          <div className="horario-block-tag">{obtenerEtiquetaTipoHorario(h.tipo)}</div>
                                           <div className="horario-block-title">{h.asignatura}</div>
                                           <div className="horario-block-subtitle">{h.grupoCodigo} - {horarioDia.salon}</div>
                                           <div className="horario-block-time">
@@ -794,13 +923,23 @@ const ModificarMatricula = () => {
                     <div>
                       <span className="resumen-label">Créditos inscritos</span>
                       <strong className="resumen-value">{resumen.creditos?.inscritos ?? 0}</strong>
+                      {estadoSeleccion.creditosRetirados > 0 && (
+                        <span className="resumen-sub resumen-sub--retiro">−{estadoSeleccion.creditosRetirados} por retiro</span>
+                      )}
                       {creditosSeleccionados > 0 && (
-                        <span className="resumen-sub">+{creditosSeleccionados} en selección</span>
+                        <span className="resumen-sub resumen-sub--agregar">+{creditosSeleccionados} por agregar</span>
                       )}
                     </div>
                     <div>
-                      <span className="resumen-label">Créditos disponibles</span>
-                      <strong className="resumen-value">{creditosDisponiblesActual}</strong>
+                      <span className="resumen-label">Créditos proyectados</span>
+                      <strong className={`resumen-value ${estadoSeleccion.excedeCreditos ? "resumen-value--alerta" : ""}`}>
+                        {estadoSeleccion.creditosProyectados}
+                      </strong>
+                      <span className="resumen-sub">de {resumen.creditos?.maximo ?? "-"} máx.</span>
+                    </div>
+                    <div>
+                      <span className="resumen-label">Disponibles (proyectado)</span>
+                      <strong className="resumen-value">{creditosDisponiblesProyectados}</strong>
                     </div>
                   </div>
                 </div>
@@ -815,6 +954,15 @@ const ModificarMatricula = () => {
                   ? "Espera la respuesta de tu solicitud pendiente."
                   : "Los cambios que selecciones aparecerán aquí. La solicitud será enviada al jefe de departamento."}
               </p>
+
+              {avisosUX.length > 0 && (
+                <div className="ux-avisos" role="status">
+                  {avisosUX.map((aviso) => (
+                    <p key={aviso} className="ux-aviso-item">{aviso}</p>
+                  ))}
+                  <p className="ux-aviso-nota">La validación final la realiza el sistema al enviar la solicitud.</p>
+                </div>
+              )}
 
               {/* Lista de cambios en la solicitud */}
               <div className="carrito-list">
@@ -832,10 +980,10 @@ const ModificarMatricula = () => {
                       const asignatura = asignaturas.find((a) => a.grupos?.some((g) => g.id === gid));
                       if (!grupo || !asignatura) return null;
                       return (
-                        <div key={`add-${gid}`} className="carrito-item" style={{ borderLeft: '4px solid #28a745' }}>
+                        <div key={`add-${gid}`} className="carrito-item carrito-item--agregar">
                           <div className="carrito-item-info">
                             <div className="carrito-item-title">
-                              <span style={{ color: '#28a745', marginRight: '0.5rem' }}>➕</span>
+                              <span className="carrito-item-icon carrito-item-icon--agregar" aria-hidden="true">+</span>
                               {asignatura.nombre}
                             </div>
                             <div className="carrito-item-meta">{asignatura.codigo} • {asignatura.creditos} cr • Grupo {grupo.codigo}</div>
@@ -854,10 +1002,10 @@ const ModificarMatricula = () => {
                       const materia = materiasMatriculadas.find(m => m.historial_id === historialId);
                       if (!materia) return null;
                       return (
-                        <div key={`rem-${historialId}`} className="carrito-item" style={{ borderLeft: '4px solid #dc3545' }}>
+                        <div key={`rem-${historialId}`} className="carrito-item carrito-item--retirar">
                           <div className="carrito-item-info">
                             <div className="carrito-item-title">
-                              <span style={{ color: '#dc3545', marginRight: '0.5rem' }}>➖</span>
+                              <span className="carrito-item-icon carrito-item-icon--retirar" aria-hidden="true">−</span>
                               {materia.nombre}
                             </div>
                             <div className="carrito-item-meta">{materia.codigo} • {materia.creditos} cr • Grupo {materia.grupo_codigo}</div>
@@ -880,7 +1028,7 @@ const ModificarMatricula = () => {
                   <button
                     className="carrito-inscribir"
                     onClick={enviarSolicitud}
-                    disabled={enviandoSolicitud}
+                    disabled={enviandoSolicitud || estadoSeleccion.excedeCreditos || conflictGrupos.size > 0}
                   >
                     {enviandoSolicitud ? (
                       <>
@@ -910,8 +1058,7 @@ const ModificarMatricula = () => {
                   return (
                     <div 
                       key={materia.historial_id} 
-                      className={`asignatura-item ${marcadaParaRetirar ? 'marcada-retirar' : ''}`}
-                      style={marcadaParaRetirar ? { opacity: 0.6, backgroundColor: '#ffebee' } : {}}
+                      className={`asignatura-item materia-matriculada ${marcadaParaRetirar ? "marcada-retirar" : ""}`}
                     >
                       <div className="asignatura-header">
                         <div className="asignatura-info">
@@ -923,7 +1070,7 @@ const ModificarMatricula = () => {
                         </div>
                       </div>
                       <div className="grupos-list">
-                        <div className="grupo-item seleccionado">
+                        <div className={`grupo-item grupo-item--matriculada ${marcadaParaRetirar ? "grupo-item--retirar" : ""}`}>
                           <div className="grupo-content">
                             <div className="grupo-header">
                               <span className="grupo-codigo">{materia.grupo_codigo}</span>
@@ -942,9 +1089,9 @@ const ModificarMatricula = () => {
                       
                       {materia.puede_retirar && !solicitudPendiente && (
                         <button
-                          className={`btn-retirar ${marcadaParaRetirar ? 'cancelar' : ''}`}
+                          type="button"
+                          className={`btn-retirar ${marcadaParaRetirar ? "cancelar" : ""}`}
                           onClick={() => toggleRetirar(materia.historial_id, materia.grupo_id)}
-                          style={marcadaParaRetirar ? { backgroundColor: '#6c757d' } : {}}
                         >
                           {marcadaParaRetirar ? 'Cancelar retiro' : 'Marcar para retirar'}
                         </button>
@@ -1020,6 +1167,7 @@ const ModificarMatricula = () => {
                       <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
+                            const tieneConflicto = conflictGrupos.has(grupo.id);
                             const cupoMaximo = Math.max(grupo.cupo_max || 0, 0);
                             const cupoDisponibleReal = Math.max(grupo.cupo_disponible || 0, 0);
                             const cupoDisponibleSeguro = Math.min(cupoDisponibleReal, cupoMaximo);
@@ -1028,7 +1176,7 @@ const ModificarMatricula = () => {
                             return (
                               <div
                                 key={grupo.id}
-                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${sinCupo ? "sin-cupo" : ""}`}
+                                className={`grupo-item ${estaSeleccionado ? "seleccionado grupo-item--agregar" : ""} ${sinCupo ? "sin-cupo" : ""} ${tieneConflicto ? "conflicto" : ""}`}
                               >
                                 <label className="grupo-checkbox-label">
                                   <input
@@ -1064,6 +1212,11 @@ const ModificarMatricula = () => {
                                     {sinCupo && (
                                       <div className="grupo-sin-cupo-text">
                                         Sin cupo disponible
+                                      </div>
+                                    )}
+                                    {tieneConflicto && (
+                                      <div className="grupo-conflicto-text">
+                                        Conflicto de horario en tu selección
                                       </div>
                                     )}
                                   </div>

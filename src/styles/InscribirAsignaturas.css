@@ -259,8 +259,8 @@
 }
 
 .historial-modal {
-  width: min(100%, 440px);
-  max-height: min(85vh, 640px);
+  width: min(100%, 520px);
+  max-height: min(88vh, 720px);
   display: flex;
   flex-direction: column;
   background: #fbfbfd;
@@ -285,7 +285,7 @@
 
 .historial-modal-header {
   position: relative;
-  padding: 20px 20px 16px 56px;
+  padding: 24px 24px 20px 56px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   background: #fff;
 }
@@ -333,7 +333,7 @@
 .historial-modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px 22px 28px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -361,16 +361,16 @@
 .historial-modal-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 4px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
 
 .historial-item {
   background: #fff;
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px 22px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
@@ -385,19 +385,19 @@
 
 .historial-item-top {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .historial-item-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .historial-item-icon.success {
@@ -417,30 +417,35 @@
 
 .historial-item-main strong {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--inscribir-text-primary);
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  line-height: 1.3;
 }
 
 .historial-item-main time {
-  font-size: 12px;
+  display: block;
+  font-size: 13px;
   color: var(--inscribir-text-secondary);
+  line-height: 1.4;
 }
 
 .historial-item-cambios {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .historial-chip {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 8px;
-  line-height: 1.3;
+  padding: 8px 14px;
+  border-radius: 10px;
+  line-height: 1.45;
 }
 
 .historial-chip.agregar {
@@ -454,12 +459,12 @@
 }
 
 .historial-item-motivo {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-radius: 12px;
   background: rgba(255, 59, 48, 0.06);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.55;
   color: #7f1d1d;
 }
 
@@ -1498,5 +1503,176 @@
 .horario-block.matriculada {
   opacity: 0.7;
   border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+/* Modificaciones: horario por tipo de cambio */
+.horario-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  padding: 0 4px;
+}
+
+.horario-leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.horario-leyenda-item::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.horario-leyenda-item--matriculada::before {
+  background: #9ca3af;
+}
+
+.horario-leyenda-item--agregar::before {
+  background: #34c759;
+}
+
+.horario-leyenda-item--retirar::before {
+  background: #ff3b30;
+}
+
+.horario-block--matriculada {
+  background: #9ca3af !important;
+  color: #fff;
+  border: 1px solid #6b7280;
+  opacity: 0.95;
+}
+
+.horario-block--agregar {
+  background: #34c759 !important;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.35);
+  z-index: 3;
+}
+
+.horario-block--retirar {
+  background: #ff3b30 !important;
+  color: #fff;
+  opacity: 0.92;
+  text-decoration: line-through;
+  z-index: 2;
+}
+
+.horario-block-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.asignatura-item.materia-matriculada {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.asignatura-item.materia-matriculada .asignatura-info h3 {
+  color: #374151;
+}
+
+.asignatura-item.marcada-retirar {
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.grupo-item--matriculada {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.grupo-item--matriculada.grupo-item--retirar {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.grupo-item--agregar.seleccionado {
+  border-color: #34c759;
+  background: #ecfdf3;
+}
+
+.grupo-item.conflicto {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.carrito-item--agregar {
+  border-left: 4px solid #34c759;
+}
+
+.carrito-item--retirar {
+  border-left: 4px solid #ff3b30;
+}
+
+.carrito-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.carrito-item-icon--agregar {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.carrito-item-icon--retirar {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.resumen-sub--agregar {
+  color: #15803d;
+}
+
+.resumen-sub--retiro {
+  color: #b91c1c;
+}
+
+.resumen-value--alerta {
+  color: #dc2626;
+}
+
+.ux-avisos {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+
+.ux-aviso-item {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.ux-aviso-nota {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #78716c;
+}
+
+.grupo-conflicto-text {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
 }
 
