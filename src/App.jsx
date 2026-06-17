@@ -273,8 +273,10 @@ function AppContent() {
     } else if (path === "/verificar-documentos") {
       setActivePage("verificar-documentos");
     } else if (path === "/modificaciones") {
+      setActivePage("modificaciones");
+    } else if (path === "/modificar-matricula") {
       setActivePage("modificar");
-    } else if (path === "/modificar-matricula") {  // Nueva ruta
+    } else if (path === "/modificar") {
       setActivePage("modificar");
     } else if (path === "/plan-estudio") {
       setActivePage("plan-estudio");
@@ -336,6 +338,8 @@ function AppContent() {
       } else {
         navigate("/modificar-matricula");
       }
+    } else if (page === "modificaciones") {
+      navigate("/modificaciones");
     } else if (page === "prueba") {
       navigate("/prueba");
     } else if (page === "Consultar") {
@@ -462,6 +466,7 @@ function AppContent() {
                   <Route path="/pensum" element={renderRoleProtected(<PensumVisual />, () => userRole !== "jefe_departamental")} />
                   <Route path="/inscribir" element={renderRoleProtected(<InscribirAsignaturas />, () => userRole !== "jefe_departamental")} />
                   <Route path="/prueba" element={renderRoleProtected(<ConsultarMatricula />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/modificar" element={<Navigate to="/modificar-matricula" replace />} />
                   
                   {/* Nueva ruta para modificar matrícula del estudiante */}
                   <Route path="/modificar-matricula" element={renderRoleProtected(<ModificarMatricula />, () => userRole !== "jefe_departamental")} />

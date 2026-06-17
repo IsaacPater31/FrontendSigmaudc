@@ -211,7 +211,7 @@ const Sidebar = forwardRef(({ activePage, setActivePage, onLogout }, ref) => {
         <p className="menu-title">Matrícula</p>
         {/* Opción: Subir documentos */}
         <div className="icon-content">
-          <button className={activePage === "Subir" ? "active" : ""} onClick={() => setActivePage("subir")}>
+          <button className={activePage === "subir" ? "active" : ""} onClick={() => setActivePage("subir")}>
             <FaFileUpload size={23} /> <span>Subir documentos</span>
           </button>
           {!isOpen && <span className="tooltip">Subir documentos</span>}

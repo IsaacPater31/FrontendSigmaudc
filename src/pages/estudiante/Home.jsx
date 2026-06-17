@@ -252,7 +252,7 @@ const HomeEstudiante = () => {
           </div>
 
           {/* Modificaciones */}
-          <div className="dashboard-card" onClick={() => navigate("/modificar")}>
+          <div className="dashboard-card" onClick={() => navigate("/modificar-matricula")}>
             <div className="card-gradient-overlay"></div>
             <div className="card-content">
               <div className="card-icon-wrapper">

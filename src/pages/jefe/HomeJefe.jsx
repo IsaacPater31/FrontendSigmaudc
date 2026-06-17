@@ -272,6 +272,29 @@ const HomeJefe = () => {
             </div>
           </div>
 
+          {/* Card: Validar Solicitudes */}
+          <div className="dashboard-card" onClick={() => navigate("/validar-solicitudes")}>
+            <div className="card-gradient-overlay"></div>
+            <div className="card-content">
+              <div className="card-icon-wrapper">
+                <div className="card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  </svg>
+                </div>
+              </div>
+              <h3>Validar Solicitudes</h3>
+              <p>Revisa, aprueba o rechaza las solicitudes de modificación enviadas por los estudiantes</p>
+              <div className="card-footer">
+                <span className="card-link">Acceder</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
           {/* Card: Modificar Plan de Estudio */}
           <div className="dashboard-card" onClick={() => navigate("/plan-estudio")}>
             <div className="card-gradient-overlay"></div>
