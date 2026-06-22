@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
 import "../../styles/InscribirAsignaturas.css";
@@ -329,6 +329,59 @@ const InscribirAsignaturas = () => {
     const [h, m] = hora.split(':');
     return `${h}:${m}`;
   };
+
+  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
+    const [h1, m1] = inicio1.split(":").map(Number);
+    const [h2, m2] = fin1.split(":").map(Number);
+    const [h3, m3] = inicio2.split(":").map(Number);
+    const [h4, m4] = fin2.split(":").map(Number);
+    const inicio1Min = h1 * 60 + m1;
+    const fin1Min = h2 * 60 + m2;
+    const inicio2Min = h3 * 60 + m3;
+    const fin2Min = h4 * 60 + m4;
+    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
+  };
+
+  const horariosSeCruzan = (horariosA = [], horariosB = []) => {
+    for (const a of horariosA) {
+      for (const b of horariosB) {
+        if (
+          a.dia === b.dia &&
+          haySolapamiento(a.hora_inicio, a.hora_fin, b.hora_inicio, b.hora_fin)
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const conflictGrupos = useMemo(() => {
+    const conflictos = new Set();
+    const bloques = [];
+
+    materiasMatriculadas.forEach((m) => {
+      bloques.push({ id: m.grupoId, horarios: m.horarios || [] });
+    });
+
+    Array.from(gruposSeleccionados).forEach((gid) => {
+      const grupo = encontrarGrupoPorId(gid);
+      if (grupo) {
+        bloques.push({ id: gid, horarios: grupo.horarios || [] });
+      }
+    });
+
+    for (let i = 0; i < bloques.length; i += 1) {
+      for (let j = i + 1; j < bloques.length; j += 1) {
+        if (horariosSeCruzan(bloques[i].horarios, bloques[j].horarios)) {
+          conflictos.add(bloques[i].id);
+          conflictos.add(bloques[j].id);
+        }
+      }
+    }
+
+    return conflictos;
+  }, [gruposSeleccionados, materiasMatriculadas, asignaturas]);
 
   const obtenerPosicionHorario = (horaInicio, horaFin) => {
     const [hInicio, mInicio] = horaInicio.split(':').map(Number);
@@ -735,14 +788,16 @@ const InscribirAsignaturas = () => {
               <div className="carrito-actions">
                 <button
                   className="carrito-inscribir"
-                  disabled={faltanObligatoriasSeleccionadas || gruposSeleccionados.size === 0}
+                  disabled={faltanObligatoriasSeleccionadas || gruposSeleccionados.size === 0 || conflictGrupos.size > 0}
                   title={
                     faltanObligatoriasSeleccionadas
                       ? "Selecciona los grupos obligatorios antes de inscribir"
-                      : undefined
+                      : conflictGrupos.size > 0
+                        ? "Resuelve los conflictos de horario antes de inscribir"
+                        : undefined
                   }
                   onClick={async () => {
-                    if (faltanObligatoriasSeleccionadas) return;
+                    if (faltanObligatoriasSeleccionadas || conflictGrupos.size > 0) return;
                     try {
                       await matriculaService.inscribirAsignaturas(Array.from(gruposSeleccionados));
                       setGruposSeleccionados(new Set());
@@ -807,6 +862,7 @@ const InscribirAsignaturas = () => {
                       <div className="grupos-list">
                           {asignatura.grupos.map((grupo) => {
                             const estaSeleccionado = gruposSeleccionados.has(grupo.id);
+                            const tieneConflicto = conflictGrupos.has(grupo.id);
                             const cupoMaximo = Math.max(grupo.cupo_max || 0, 0);
                             const cupoDisponibleReal = Math.max(grupo.cupo_disponible || 0, 0);
                             const cupoDisponibleSeguro = Math.min(cupoDisponibleReal, cupoMaximo);
@@ -816,7 +872,7 @@ const InscribirAsignaturas = () => {
                             return (
                               <div
                                 key={grupo.id}
-                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${sinCupo ? "sin-cupo" : ""} ${esObligatorio ? "obligatorio" : ""}`}
+                                className={`grupo-item ${estaSeleccionado ? "seleccionado" : ""} ${sinCupo ? "sin-cupo" : ""} ${esObligatorio ? "obligatorio" : ""} ${tieneConflicto ? "conflicto" : ""}`}
                               >
                                 <label className="grupo-checkbox-label">
                                     <input
