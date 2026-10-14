@@ -1,3 +1,9 @@
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
 import React, { useEffect, useRef, useState } from "react";
 import { FaCamera } from "react-icons/fa";
 import datosEstudianteService from "../../services/datosEstudiante";
@@ -53,7 +59,6 @@ const DatosEstudiante = () => {
   };
 
   const formatPromedio = () => (perfil?.promedio == null ? "Pendiente" : perfil.promedio.toFixed(2));
-  const nombreCompleto = `${perfil?.nombre || ""} ${perfil?.apellido || ""}`.trim() || "Sin datos";
 
   const recordCards = [
     {

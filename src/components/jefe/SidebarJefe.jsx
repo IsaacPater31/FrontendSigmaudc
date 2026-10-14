@@ -1,3 +1,9 @@
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import {
   FaBars,
@@ -84,6 +90,7 @@ const SidebarJefe = forwardRef(({ activePage, setActivePage, onLogout }, ref) =>
         closeSidebar();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage]);
 
   // Cerrar sidebar al hacer click en backdrop

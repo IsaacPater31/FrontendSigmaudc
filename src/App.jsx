@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
+import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { FaBars } from "react-icons/fa";
 // Componentes comunes
@@ -36,7 +42,7 @@ const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutos
 const WARNING_BEFORE_MS = 60 * 1000; // Avisar 1 minuto antes
 
 // Botón hamburguesa para móviles
-const MobileMenuButton = ({ userRole, onToggle }) => {
+const MobileMenuButton = ({ onToggle }) => {
   return (
     <button
       className="mobile-menu-button"
@@ -75,11 +81,11 @@ function AppContent() {
   const [roleLoading, setRoleLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const sidebarRef = React.useRef(null);
-  const logoutTimerRef = React.useRef(null);
-  const warningTimerRef = React.useRef(null);
-  const countdownIntervalRef = React.useRef(null);
-  const logoutDeadlineRef = React.useRef(null);
+  const sidebarRef = useRef(null);
+  const logoutTimerRef = useRef(null);
+  const warningTimerRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
+  const logoutDeadlineRef = useRef(null);
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
   const [warningSecondsLeft, setWarningSecondsLeft] = useState(60);
   const [showSessionExpiredNotice, setShowSessionExpiredNotice] = useState(false);
@@ -107,8 +113,7 @@ function AppContent() {
           authService.saveUser(user);
           setUserRole(user.rol || null);
         }
-      } catch (error) {
-        console.error("Error loading user role:", error);
+      } catch {
         const cachedUser = authService.getUser();
         if (cachedUser?.rol) {
           setUserRole(cachedUser.rol || null);
@@ -254,7 +259,7 @@ function AppContent() {
   }, [navigate, location.pathname]);
 
   // Sincronizar activePage con la ruta actual (agregar la nueva ruta)
-  React.useEffect(() => {
+  useEffect(() => {
     const path = location.pathname;
     if (path === "/" || path === "/home") {
       setActivePage("home");
@@ -266,8 +271,8 @@ function AppContent() {
       setActivePage("pensum");
     } else if (path === "/inscribir") {
       setActivePage("inscribir");
-    } else if (path === "/prueba") {
-      setActivePage("Consultar");
+    } else if (path === "/consultar-matricula") {
+      setActivePage("consultar");
     } else if (path === "/plazos") {
       setActivePage("plazos");
     } else if (path === "/verificar-documentos") {
@@ -340,10 +345,8 @@ function AppContent() {
       }
     } else if (page === "modificaciones") {
       navigate("/modificaciones");
-    } else if (page === "prueba") {
-      navigate("/prueba");
-    } else if (page === "Consultar") {
-      navigate("/prueba");
+    } else if (page === "consultar") {
+      navigate("/consultar-matricula");
     } else {
       navigate(`/${page}`);
     }
@@ -413,7 +416,6 @@ function AppContent() {
               
               {/* Botón hamburguesa para móviles */}
               <MobileMenuButton 
-                userRole={userRole}
                 onToggle={() => {
                   // Usar el ref para sincronizar con el estado interno del sidebar
                   if (sidebarRef.current) {
@@ -465,7 +467,7 @@ function AppContent() {
                   <Route path="/hoja" element={renderRoleProtected(<DatosEstudiante />, () => userRole !== "jefe_departamental")} />
                   <Route path="/pensum" element={renderRoleProtected(<PensumVisual />, () => userRole !== "jefe_departamental")} />
                   <Route path="/inscribir" element={renderRoleProtected(<InscribirAsignaturas />, () => userRole !== "jefe_departamental")} />
-                  <Route path="/prueba" element={renderRoleProtected(<ConsultarMatricula />, () => userRole !== "jefe_departamental")} />
+                  <Route path="/consultar-matricula" element={renderRoleProtected(<ConsultarMatricula />, () => userRole !== "jefe_departamental")} />
                   <Route path="/modificar" element={<Navigate to="/modificar-matricula" replace />} />
                   
                   {/* Nueva ruta para modificar matrícula del estudiante */}
@@ -500,15 +502,15 @@ function AppContent() {
       <div className="session-modal-overlay" role="presentation">
         <div className="session-modal" role="dialog" aria-modal="true" aria-labelledby="session-warning-title">
           <div className="session-modal-icon warning">!</div>
-          <h2 id="session-warning-title" className="session-modal-title">Tu sesion esta por expirar</h2>
+          <h2 id="session-warning-title" className="session-modal-title">Tu sesión está por expirar</h2>
           <p className="session-modal-message">
-            Por seguridad, tu sesion se cerrara en <strong>{warningSecondsLeft}</strong> segundos por inactividad.
+            Por seguridad, tu sesión se cerrará en <strong>{warningSecondsLeft}</strong> segundos por inactividad.
           </p>
           <p className="session-modal-message secondary">
-            Haz clic en "Seguir conectado" para mantener tu sesion activa.
+            Haz clic en "Seguir conectado" para mantener tu sesión activa.
           </p>
           <div className="session-modal-actions">
-            <button className="session-btn secondary" onClick={handleLogout}>Cerrar sesion ahora</button>
+            <button className="session-btn secondary" onClick={handleLogout}>Cerrar sesión ahora</button>
             <button className="session-btn primary" onClick={handleStaySignedIn}>Seguir conectado</button>
           </div>
         </div>
@@ -518,12 +520,12 @@ function AppContent() {
       <div className="session-modal-overlay" role="presentation">
         <div className="session-modal" role="dialog" aria-modal="true" aria-labelledby="session-expired-title">
           <div className="session-modal-icon expired">i</div>
-          <h2 id="session-expired-title" className="session-modal-title">Sesion cerrada por inactividad</h2>
+          <h2 id="session-expired-title" className="session-modal-title">Sesión cerrada por inactividad</h2>
           <p className="session-modal-message">
-            Tu sesion se cerro automaticamente despues de 10 minutos sin actividad.
+            Tu sesión se cerró automáticamente después de 10 minutos sin actividad.
           </p>
           <p className="session-modal-message secondary">
-            Inicia sesion nuevamente para continuar.
+            Inicia sesión nuevamente para continuar.
           </p>
           <div className="session-modal-actions center">
             <button className="session-btn primary" onClick={() => setShowSessionExpiredNotice(false)}>Entendido</button>

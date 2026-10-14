@@ -1,3 +1,9 @@
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
 import React, { useEffect, useState, useMemo } from 'react';
 import '../../styles/PlanDeEstudio.css';
 import '../../styles/Modificaciones.css';
@@ -280,7 +286,7 @@ const PlanDeEstudio = () => {
         ) : loadingGrupos ? (
           <div className="empty">Cargando grupos...</div>
         ) : filteredGrupos.length === 0 ? (
-          <div className="empty">No hay grupos disponibles para este pensum en el periodo activo.</div>
+          <div className="empty">No hay grupos disponibles para este pensum en el período activo.</div>
         ) : (
           <div className="asignaturas-grid">
             {filteredGrupos.map((g) => (

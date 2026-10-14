@@ -1,3 +1,9 @@
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
 import React, { useState, useEffect } from "react";
 import { matriculaService } from "../../services/matricula";
 import { FaCalendarAlt, FaUser, FaMapMarkerAlt, FaBook, FaExclamationTriangle } from "react-icons/fa";
@@ -170,7 +176,7 @@ const ConsultarMatricula = () => {
               {horarioData?.periodo ? (
                 <p>Periodo {horarioData.periodo.year}-{horarioData.periodo.semestre}</p>
               ) : (
-                <p>No hay periodo activo</p>
+                <p>No hay período activo</p>
               )}
             </div>
           </div>
@@ -178,7 +184,7 @@ const ConsultarMatricula = () => {
         <div className="empty-state">
           <FaBook size={48} />
           <h2>No tienes asignaturas matriculadas</h2>
-          <p>No hay asignaturas inscritas para el periodo actual.</p>
+          <p>No hay asignaturas inscritas para el período actual.</p>
         </div>
       </div>
     );
@@ -242,7 +248,7 @@ const ConsultarMatricula = () => {
             <div className="horario-grid tabla-franjas">
               <div className="fila-franja header">
                 <div className="celda-franja-label">Franja</div>
-                {diasCortos.map((dia, idx) => (
+                {diasCortos.map((dia) => (
                   <div key={dia} className="celda-franja-header">
                     {dia}
                   </div>

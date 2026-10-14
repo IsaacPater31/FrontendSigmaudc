@@ -1,3 +1,9 @@
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
 import React, { useState, useEffect } from "react";
 import { plazosService } from "../../services/plazos";
 import "../../styles/Plazos.css";
@@ -68,7 +74,7 @@ const Plazos = () => {
       setPlazos(data?.plazos || null);
     } catch (err) {
       console.error("Error loading active plazos:", err);
-      setError(getApiErrorMessage(err, "No se pudieron cargar los plazos del periodo activo."));
+      setError(getApiErrorMessage(err, "No se pudieron cargar los plazos del período activo."));
     } finally {
       setLoading(false);
     }
@@ -76,7 +82,7 @@ const Plazos = () => {
 
   const openToggleConfirmDialog = (tipoPlazo) => {
     if (!activePeriodo || !plazos) {
-      setError("No hay un periodo activo para gestionar plazos.");
+      setError("No hay un período activo para gestionar plazos.");
       setTimeout(() => setError(""), 3000);
       return;
     }
@@ -124,7 +130,7 @@ const Plazos = () => {
             </circle>
           </svg>
         </div>
-        <p>Cargando plazos del periodo activo...</p>
+        <p>Cargando plazos del período activo...</p>
       </div>
     );
   }
@@ -138,7 +144,7 @@ const Plazos = () => {
             <p className="plazos-subtitle">
               {activePeriodo
                 ? `Gestionas las acciones del periodo ${formatPeriodo(activePeriodo)}.`
-                : "No hay un periodo activo configurado actualmente por la administración."}
+                : "No hay un período activo configurado actualmente por la administración."}
             </p>
           </div>
         </div>
@@ -174,7 +180,7 @@ const Plazos = () => {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <h3>No hay un periodo activo</h3>
+          <h3>No hay un período activo</h3>
           <p>Cuando la administración active un nuevo periodo, podrás gestionar los plazos desde esta vista.</p>
         </div>
       ) : (
@@ -185,14 +191,14 @@ const Plazos = () => {
               <p>Los cambios aplican únicamente a tu programa dentro del periodo vigente.</p>
             </div>
             <div className="active-periodo-chip">
-              <span>Periodo activo</span>
+              <span>Período activo</span>
               <strong>{formatPeriodo(activePeriodo)}</strong>
             </div>
           </div>
 
           <div className="periodo-info-banner">
             <div>
-              <span className="info-label">Periodo</span>
+              <span className="info-label">Período</span>
               <span className="info-value">{formatPeriodo(activePeriodo)}</span>
             </div>
             <div>
@@ -215,7 +221,7 @@ const Plazos = () => {
                 <circle cx="12" cy="12" r="10" />
               </svg>
               <h3>Cargando plazos</h3>
-              <p>Estamos sincronizando los switches de este periodo.</p>
+              <p>Estamos sincronizando los switches de este período.</p>
             </div>
           ) : (
             <div className="plazos-section standalone">

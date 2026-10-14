@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
+import { useState, useEffect, useRef } from "react";
 import "../../styles/PensumVisual.css";
 import { FaInfoCircle, FaCheckCircle, FaClock, FaExclamationTriangle, FaBook } from "react-icons/fa";
 import { pensumService } from "../../services/pensum";
@@ -108,24 +114,6 @@ const PensumVisual = () => {
       case "activa":
       default:
         return "activa";
-    }
-  };
-
-  // Función para obtener el ícono según el estado
-  const getEstadoIcon = (estado) => {
-    if (!estado) return null;
-    switch (estado.toLowerCase()) {
-      case "cursada":
-        return <FaCheckCircle />;
-      case "matriculada":
-        return <FaBook />;
-      case "en_espera":
-        return <FaClock />;
-      case "pendiente_repeticion":
-      case "obligatoria_repeticion":
-        return <FaExclamationTriangle />;
-      default:
-        return null;
     }
   };
 
@@ -625,7 +613,7 @@ const PensumVisual = () => {
           <div className="format-card-example">
             <div className="format-card-nombre">Nombre de la Asignatura</div>
             <div className="format-card-info-top">
-              <span className="format-card-codigo">CODIGO</span>
+              <span className="format-card-codigo">CÓDIGO</span>
               <span className="format-card-creditos">Crd</span>
             </div>
             <div className="format-card-info-bottom">
@@ -681,7 +669,7 @@ const PensumVisual = () => {
               )}
               {selectedAsignatura.periodo_cursada && (
                 <div className="detalle-row">
-                  <strong>Periodo cursada:</strong> {selectedAsignatura.periodo_cursada}
+                  <strong>Período cursada:</strong> {selectedAsignatura.periodo_cursada}
                 </div>
               )}
               {selectedAsignatura.nota !== null && selectedAsignatura.nota !== undefined && (

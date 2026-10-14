@@ -1,149 +1,84 @@
-import axios from 'axios';
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
 
-// La URL del API debe estar configurada en el archivo .env
-// Si no está configurada, mostrar error en desarrollo
-const API_URL = import.meta.env.VITE_API_URL;
+// Servicio de autenticación y manejo de sesión.
+// La instancia HTTP y los interceptores viven en ./api.js.
+import api from './api';
+
 const LAST_ACTIVITY_KEY = 'lastActivityAt';
 
-if (!API_URL) {
-  console.error('⚠️ ERROR: VITE_API_URL no está configurada en el archivo .env del frontend');
-  console.error('Por favor, crea un archivo .env en la carpeta frontend/ con:');
-  console.error('VITE_API_URL=http://localhost:8080');
-  throw new Error('VITE_API_URL no está configurada. Revisa el archivo .env del frontend.');
-}
-
-// Configurar axios con interceptores para agregar el token
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-const extractApiErrorMessage = (error) => {
-	if (error?.response?.data) {
-		const data = error.response.data;
-		if (typeof data === 'string') return data;
-		if (typeof data?.message === 'string' && data.message.trim()) return data.message;
-		if (typeof data?.error === 'string' && data.error.trim()) return data.error;
-		if (typeof data?.razon === 'string' && data.razon.trim()) return data.razon;
-	}
-	if (typeof error?.message === 'string' && error.message.trim()) return error.message;
-	return 'Ocurrió un error inesperado';
-};
-
-// Interceptor para agregar el token a las peticiones
-api.interceptors.request.use(
-	(config) => {
-		const token = localStorage.getItem('token');
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
-		} else {
-			console.warn('No token found in localStorage for request to:', config.url);
-		}
-		return config;
-	},
-	(error) => {
-		return Promise.reject(error);
-	}
-);
-
-// Interceptor para manejar errores de autenticación
-api.interceptors.response.use(
-	(response) => response,
-	(error) => {
-		// Log para depuración
-		if (error.response) {
-			console.error('API Error:', error.response.status, error.response.statusText, error.config?.url);
-		} else if (error.request) {
-			console.error('API Request Error:', error.request);
-		} else {
-			console.error('API Error:', error.message);
-		}
-		
-		// Solo redirigir si NO es una petición de login o set-password
-		// El login y set-password manejan sus propios errores 401
-		if (error.response?.status === 401 && 
-			!error.config?.url?.includes('/auth/login') && 
-			!error.config?.url?.includes('/auth/set-password')) {
-			// Token inválido o expirado en otras rutas
-			localStorage.removeItem('token');
-			localStorage.removeItem('user');
-			window.location.href = '/login';
-		}
-		error.userMessage = extractApiErrorMessage(error);
-		return Promise.reject(error);
-	}
-);
-
 export const authService = {
-  // Login
-  async login(codigo, password) {
-    const response = await api.post('/auth/login', { codigo, password });
-    return response.data;
-  },
+    // Inicio de sesión con código institucional y contraseña.
+    async login(codigo, password) {
+        const response = await api.post('/auth/login', { codigo, password });
+        return response.data;
+    },
 
-  // Establecer contraseña (primer inicio)
-  async setPassword(userId, codigo, email, newPassword) {
-    const response = await api.post('/auth/set-password', {
-      userId,
-      codigo,
-      email,
-      newPassword,
-    });
-    return response.data;
-  },
+    // Establecer contraseña (primer inicio de sesión del usuario).
+    async setPassword(userId, codigo, email, newPassword) {
+        const response = await api.post('/auth/set-password', {
+            userId,
+            codigo,
+            email,
+            newPassword,
+        });
+        return response.data;
+    },
 
-  // Obtener usuario actual
-  async getCurrentUser() {
-    const response = await api.get('/api/me');
-    return response.data;
-  },
+    // Obtener datos del usuario autenticado.
+    async getCurrentUser() {
+        const response = await api.get('/api/me');
+        return response.data;
+    },
 
-  // Guardar token
-  saveToken(token) {
-    localStorage.setItem('token', token);
-    this.touchActivity();
-  },
+    // Guardar token de sesión.
+    saveToken(token) {
+        localStorage.setItem('token', token);
+        this.touchActivity();
+    },
 
-  // Obtener token
-  getToken() {
-    return localStorage.getItem('token');
-  },
+    // Obtener token de sesión.
+    getToken() {
+        return localStorage.getItem('token');
+    },
 
-  // Guardar usuario
-  saveUser(user) {
-    localStorage.setItem('user', JSON.stringify(user));
-  },
+    // Guardar datos del usuario autenticado.
+    saveUser(user) {
+        localStorage.setItem('user', JSON.stringify(user));
+    },
 
-  // Obtener usuario
-  getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
+    // Obtener datos del usuario autenticado.
+    getUser() {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    },
 
-  // Cerrar sesión
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem(LAST_ACTIVITY_KEY);
-  },
+    // Cerrar sesión.
+    logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+    },
 
-  // Verificar si está autenticado
-  isAuthenticated() {
-    return !!this.getToken();
-  },
+    // Indica si existe una sesión activa.
+    isAuthenticated() {
+        return !!this.getToken();
+    },
 
-  touchActivity() {
-    localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
-  },
+    // Registra el momento de la última actividad del usuario.
+    touchActivity() {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
+    },
 
-  getLastActivity() {
-    const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
-    const parsed = raw ? Number(raw) : NaN;
-    return Number.isFinite(parsed) ? parsed : null;
-  },
+    // Retorna el momento de la última actividad registrada, o null.
+    getLastActivity() {
+        const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
+        const parsed = raw ? Number(raw) : NaN;
+        return Number.isFinite(parsed) ? parsed : null;
+    },
 };
 
 export default api;
-

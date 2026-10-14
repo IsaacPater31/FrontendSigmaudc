@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
+import { horariosSeCruzan } from "../../utils/horarios";
 import "../../styles/InscribirAsignaturas.css";
 
 const etiquetaComponente = (componente) => (componente === "laboratorio" ? "Lab" : "Teo");
@@ -14,7 +21,6 @@ const InscribirAsignaturas = () => {
   const [horario, setHorario] = useState([]);
   const [materiasMatriculadas, setMateriasMatriculadas] = useState([]); // Nuevo: materias ya inscritas
   const [resumen, setResumen] = useState(null);
-  const [mensajes, setMensajes] = useState([]);
   const [dialog, setDialog] = useState(null);
   const [creditosSeleccionados, setCreditosSeleccionados] = useState(0);
 
@@ -93,6 +99,7 @@ const InscribirAsignaturas = () => {
 
   useEffect(() => {
     validarYcargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -108,7 +115,6 @@ const InscribirAsignaturas = () => {
             : asignaturasData || {};
           const nuevasAsignaturas = normalizeAsignaturasFromAPI(payload.asignaturas || []);
           setAsignaturas(nuevasAsignaturas);
-          setMensajes(payload.mensajes || []);
           if (payload.periodo || payload.creditos || payload.estado_estudiante) {
             setResumen({
               periodo: payload.periodo,
@@ -134,8 +140,8 @@ const InscribirAsignaturas = () => {
             setCreditosSeleccionados(nuevosCreditos);
             return next;
           });
-        } catch (error) {
-          console.log("No se pudo actualizar oferta/cupos en tiempo real:", error?.message || error);
+        } catch {
+          // La actualización en tiempo real es de mejor esfuerzo; se reintentará con el siguiente evento.
         }
       },
     });
@@ -216,7 +222,6 @@ const InscribirAsignaturas = () => {
         });
         setGruposSeleccionados(obligatoriosPreselected);
         setCreditosSeleccionados(creditosIniciales);
-        setMensajes(payload.mensajes || []);
         if (payload.periodo || payload.creditos || payload.estado_estudiante) {
           setResumen({
             periodo: payload.periodo,
@@ -231,7 +236,6 @@ const InscribirAsignaturas = () => {
         openDialog("Oferta temporalmente indisponible", razonCarga);
         console.warn("Error cargando asignaturas:", error);
         setAsignaturas([]);
-        setMensajes([]);
         setResumen(null);
       }
     } catch (error) {
@@ -248,13 +252,13 @@ const InscribirAsignaturas = () => {
     }
   };
 
-  const encontrarGrupoPorId = (grupoId) => {
+  const encontrarGrupoPorId = useCallback((grupoId) => {
     for (const asignatura of asignaturas) {
       const grupo = asignatura.grupos?.find((g) => g.id === grupoId);
       if (grupo) return grupo;
     }
     return null;
-  };
+  }, [asignaturas]);
 
   const toggleGrupo = (grupoId, asignatura) => {
     if (asignatura.estado === "cursada") {
@@ -330,32 +334,6 @@ const InscribirAsignaturas = () => {
     return `${h}:${m}`;
   };
 
-  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
-    const [h1, m1] = inicio1.split(":").map(Number);
-    const [h2, m2] = fin1.split(":").map(Number);
-    const [h3, m3] = inicio2.split(":").map(Number);
-    const [h4, m4] = fin2.split(":").map(Number);
-    const inicio1Min = h1 * 60 + m1;
-    const fin1Min = h2 * 60 + m2;
-    const inicio2Min = h3 * 60 + m3;
-    const fin2Min = h4 * 60 + m4;
-    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
-  };
-
-  const horariosSeCruzan = (horariosA = [], horariosB = []) => {
-    for (const a of horariosA) {
-      for (const b of horariosB) {
-        if (
-          a.dia === b.dia &&
-          haySolapamiento(a.hora_inicio, a.hora_fin, b.hora_inicio, b.hora_fin)
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
   const conflictGrupos = useMemo(() => {
     const conflictos = new Set();
     const bloques = [];
@@ -381,7 +359,7 @@ const InscribirAsignaturas = () => {
     }
 
     return conflictos;
-  }, [gruposSeleccionados, materiasMatriculadas, asignaturas]);
+  }, [gruposSeleccionados, materiasMatriculadas, encontrarGrupoPorId]);
 
   const obtenerPosicionHorario = (horaInicio, horaFin) => {
     const [hInicio, mInicio] = horaInicio.split(':').map(Number);
@@ -657,7 +635,7 @@ const InscribirAsignaturas = () => {
               <div className="resumen-card">
                 <div className="resumen-header">
                   <div>
-                    <p className="resumen-label">Periodo activo</p>
+                    <p className="resumen-label">Período activo</p>
                     <p className="resumen-value">
                       {resumen.periodo
                         ? `${resumen.periodo.year}-${resumen.periodo.semestre}`

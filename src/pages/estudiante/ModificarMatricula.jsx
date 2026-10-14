@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { matriculaService } from "../../services/matricula";
+import { horariosSeCruzan } from "../../utils/horarios";
 import "../../styles/InscribirAsignaturas.css";
 import { FaCheckCircle, FaTimesCircle, FaSpinner, FaClock, FaHistory, FaTimes, FaClipboardList } from "react-icons/fa";
 
@@ -155,6 +162,7 @@ const ModificarMatricula = () => {
 
   useEffect(() => {
     validarYcargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asignaturasPage]);
 
   const cargarDatosModificaciones = async (page = 1) => {
@@ -195,21 +203,22 @@ const ModificarMatricula = () => {
         await cargarSolicitudes();
         try {
           await cargarDatosModificaciones(asignaturasPage);
-        } catch (error) {
+        } catch {
           // Silenciar para no interrumpir la UX si el stream notifica un cambio no aplicable.
-          console.log("No se pudo refrescar datos de modificaciones tras evento:", error?.message || error);
         }
       },
     });
 
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!validacion?.puedeModificar) return;
-    cargarDatosModificaciones(asignaturasPage).catch((error) => {
-      console.log("No se pudo cambiar de página de asignaturas:", error?.message || error);
+    cargarDatosModificaciones(asignaturasPage).catch(() => {
+      // La página se reintentará con la próxima interacción del usuario.
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asignaturasPage]);
 
   const validarYcargar = async () => {
@@ -291,42 +300,17 @@ const ModificarMatricula = () => {
       setHistorialSolicitudes(
         solicitudes.filter(s => s.estado !== 'pendiente')
       );
-    } catch (error) {
+    } catch {
       // Silenciar el error si el endpoint no existe aún
-      console.log("Solicitudes no disponibles aún:", error.message);
       setSolicitudPendiente(null);
       setHistorialSolicitudes([]);
     }
   };
 
-  const haySolapamiento = (inicio1, fin1, inicio2, fin2) => {
-    const [h1, m1] = inicio1.split(":").map(Number);
-    const [h2, m2] = fin1.split(":").map(Number);
-    const [h3, m3] = inicio2.split(":").map(Number);
-    const [h4, m4] = fin2.split(":").map(Number);
-    const inicio1Min = h1 * 60 + m1;
-    const fin1Min = h2 * 60 + m2;
-    const inicio2Min = h3 * 60 + m3;
-    const fin2Min = h4 * 60 + m4;
-    return !(fin1Min <= inicio2Min || fin2Min <= inicio1Min);
-  };
-
-  const horariosSeCruzan = (horariosA = [], horariosB = []) => {
-    for (const a of horariosA) {
-      for (const b of horariosB) {
-        if (
-          a.dia === b.dia &&
-          haySolapamiento(a.hora_inicio, a.hora_fin, b.hora_inicio, b.hora_fin)
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  const encontrarAsignaturaPorGrupoId = (grupoId) =>
-    asignaturas.find((a) => a.grupos?.some((g) => g.id === grupoId));
+  const encontrarAsignaturaPorGrupoId = useCallback(
+    (grupoId) => asignaturas.find((a) => a.grupos?.some((g) => g.id === grupoId)),
+    [asignaturas]
+  );
 
   const evaluarSeleccionUX = useCallback(
     (selGrupos, selRetiros) => {
@@ -388,7 +372,7 @@ const ModificarMatricula = () => {
         excedeCreditos: creditosProyectados > maximo,
       };
     },
-    [asignaturas, materiasMatriculadas, resumen]
+    [asignaturas, materiasMatriculadas, resumen, encontrarAsignaturaPorGrupoId]
   );
 
   const horarioVisual = useMemo(() => {
@@ -511,7 +495,7 @@ const ModificarMatricula = () => {
   };
 
   // Nuevo: marcar materia para retirar en la solicitud
-  const toggleRetirar = (historialId, grupoId) => {
+  const toggleRetirar = (historialId) => {
     const materia = materiasMatriculadas.find(m => m.historial_id === historialId);
     if (!materia?.puede_retirar) return;
 
@@ -902,7 +886,7 @@ const ModificarMatricula = () => {
                 <div className="resumen-card">
                   <div className="resumen-header">
                     <div>
-                      <p className="resumen-label">Periodo activo</p>
+                      <p className="resumen-label">Período activo</p>
                       <p className="resumen-value">
                         {resumen.periodo
                           ? `${resumen.periodo.year}-${resumen.periodo.semestre}`
@@ -1049,7 +1033,7 @@ const ModificarMatricula = () => {
             <div className="asignaturas-list">
               {materiasMatriculadas.length === 0 ? (
                 <div className="asignaturas-empty">
-                  <p>No tienes materias matriculadas en este periodo.</p>
+                  <p>No tienes materias matriculadas en este período.</p>
                 </div>
               ) : (
                 materiasMatriculadas.map((materia) => {

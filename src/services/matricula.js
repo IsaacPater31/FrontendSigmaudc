@@ -1,6 +1,11 @@
-import api from './auth';
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
 
-const API_URL = import.meta.env.VITE_API_URL;
+import api, { API_URL } from './api';
+
 
 export const matriculaService = {
   // Validar si el estudiante puede inscribir (plazo activo y documentos aprobados)

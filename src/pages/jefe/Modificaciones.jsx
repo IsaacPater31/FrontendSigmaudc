@@ -1,4 +1,10 @@
-import React, { useState, useMemo } from 'react';
+// SIGMA-UDC — Sistema Integral de Gestión de Matrícula Académica
+// Copyright (c) 2025 Andrés Javier Quintana Alape, Gustavo Calderón Kelsey,
+// Isaac David Paternina Noble, Harry Perez Perea, Camilo Rodríguez Garay,
+// José Félix Bustamante Soto y Juan Felipe Eraso Navarro.
+// Todos los derechos reservados.
+
+import { useState, useMemo } from 'react';
 import { matriculaService } from '../../services/matricula';
 import '../../styles/Modificaciones.css';
 // Reuse student schedule styles and the new HorarioGrid component
@@ -66,9 +72,7 @@ const Modificaciones = () => {
     setMessage(null);
     setError(null);
     try {
-      console.log('Attempting desmatricular', { estudianteId: student.id, grupoId });
       await matriculaService.jefeDesmatricular(student.id, grupoId);
-      console.log('Desmatricular request successful for grupo', grupoId);
       setMessage('Desmatriculación realizada correctamente');
       // Refresh
       const data = await matriculaService.getStudentMatricula({ id: student.id });
@@ -117,21 +121,10 @@ const Modificaciones = () => {
 
   // No usamos oferta ni filtros — todo se hace por código manual.
 
-  // Build set of matriculated asignatura IDs
-  const matriculadasSet = useMemo(() => {
-    const s = new Set();
-    (clases || []).forEach((c) => {
-      if (c.asignatura_id) s.add(c.asignatura_id);
-      if (c.asignaturaId) s.add(c.asignaturaId);
-    });
-    return s;
-  }, [clases]);
-  
-
   return (
     <div className="modificaciones-container">
       <div className="inscribir-header">
-        <h1>Consultar Matricula</h1>
+        <h1>Consultar Matrícula</h1>
         <p>Busca un estudiante por su código para consultar su matrícula. Puedes matricular o desmatricular asignaturas.</p>
       </div>
 
@@ -170,7 +163,7 @@ const Modificaciones = () => {
                 </div>
 
                 {clases.length === 0 ? (
-                  <div className="horario-empty-message">El estudiante no tiene asignaturas matriculadas en este periodo.</div>
+                  <div className="horario-empty-message">El estudiante no tiene asignaturas matriculadas en este período.</div>
                 ) : (
                   <HorarioGrid
                     entries={clases}
